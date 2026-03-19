@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>夜城神探：午夜追凶</title>
+    
+    <!-- 引入 PixiJS 和 pixi-spine (对应 Spine 3.8) -->
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@5.3.12/dist/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi-spine@2.1.14/dist/pixi-spine.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, "Segoe UI", sans-serif; }
+
+        body { background-color: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; touch-action: manipulation; }
+
+        #app { 
+            width: 100%; height: 100vh; max-width: 500px; position: relative; 
+            background: url('img/bg1.png') center center / cover no-repeat;
+            background-color: #2a2c36; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* 顶部 UI */
+        .top-ui { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 20px 10px; }
+        .coin-pill { border: 2px solid #ebd160; border-radius: 8px; padding: 5px 12px; font-size: 14px; color: #ebd160; font-weight: bold; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        .level-title { font-size: 20px; color: #fff; font-weight: bold; margin-bottom: 5px; text-align: center; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+        .hearts-container { display: flex; justify-content: center; gap: 4px; }
+        .heart { color: #d96880; font-size: 14px; transition: 0.2s; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));}
+        .hint-btn { border: 2px solid #74c2f2; border-radius: 8px; padding: 5px 12px; font-size: 14px; color: #74c2f2; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); cursor: pointer;}
+
+        /* 规则面板 */
+        .rules-container { width: 92%; margin: 5px auto 0; background: rgba(255, 255, 255, 0.95); border-radius: 22px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: flex; align-items: center; padding: 16px 5px; z-index: 10; position: relative; }
+        .rule-item { flex: 1; text-align: center; font-size: 13px; color: #444; line-height: 1.5; font-weight: 500;}
+        .rule-hl { color: #1a73e8; font-weight: bold; font-size: 16px; margin: 0 2px;}
+        .rule-divider { width: 1px; height: 35px; background: #e5e5e5; }
+        
+        /* 规则跳动动画 */
+        @keyframes attentionJump {
+            0%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-12px); }
+            50% { transform: translateY(0); }
+            70% { transform: translateY(-6px); }
+            85% { transform: translateY(0); }
+        }
+        .attention-jump { animation: attentionJump 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+
+        .counter-pill-wrapper { display: flex; justify-content: center; margin-top: -12px; z-index: 11; position: relative; }
+        .counter-pill { background: #ffffff; border-radius: 20px; padding: 6px 20px; font-size: 14px; font-weight: bold; color: #555; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px; }
+        .counter-red { color: #ea4335; font-size: 18px; }
+
+        .main-interaction-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 5; }
+        
+        /* 核心网格容器 */
+        .board-wrapper { width: 88%; max-width: 360px; padding: 12px; margin-bottom: 30px; position: relative; }
+
+        /* PIXI Canvas 容器 */
+        #pixi-canvas-container { position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; pointer-events: none; z-index: 1; }
+        
+        /* DOM 网格容器 */
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; position: relative; z-index: 2; }
+        
+        /* 交互透明方块：比例改为 82:116 */
+        .cell { aspect-ratio: 82 / 116; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 28px; cursor: pointer; position: relative; background: transparent; transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .cell:active { transform: scale(0.9); }
+
+        @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 游戏状态标记 */
+        .mark-x { color: #fff; font-weight: bold; font-family: sans-serif; font-size: 32px; opacity: 0.9; animation: popIn 0.2s ease-out; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+        .mark-error { color: #ea4335; font-weight: bold; font-family: sans-serif; font-size: 40px; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; border-radius: 6px; animation: popIn 0.2s ease-out; pointer-events: none; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+
+        /* 彩条庆祝特效升级版 */
+        .confetti-particle { 
+            position: absolute; width: 8px; height: 16px; border-radius: 2px; z-index: 50; pointer-events: none; 
+            /* 增加了爆炸扩散动画的时间 */
+            animation: blast 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; 
+        }
+        @keyframes blast { 
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; } 
+            100% { transform: translate(var(--tx), var(--ty)) scale(0.6) rotate(var(--rot)); opacity: 0; } 
+        }
+
+        /* 底部操作说明 */
+        .controls-guide { width: 85%; display: flex; justify-content: space-around; margin-bottom: 30px;}
+        .guide-item { display: flex; flex-direction: column; align-items: center; color: #eaeaea; font-size: 13px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+        .guide-box { width: 50px; height: 50px; background: rgba(30, 25, 34, 0.8); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 22px; margin-bottom: 6px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.4);}
+        .guide-item span { color: #ebd160; font-weight: bold; margin-top: 3px; }
+
+        #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 25, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .victory-title { color: #74c2f2; font-size: 32px; font-weight: bold; margin-bottom: 15px; letter-spacing: 2px;}
+        .big-icon { font-size: 80px; margin-bottom: 25px; }
+        .v-btn { background: #ebd160; color: #2f2331; border: none; padding: 15px 45px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 30px; border-radius: 30px; box-shadow: 0 4px 15px rgba(235, 209, 96, 0.4);}
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="top-ui">
+        <div class="coin-pill">💵 <span id="total-coins">1400</span></div>
+        <div>
+            <div class="level-title" id="level-display">第1街区</div>
+            <div class="hearts-container" id="hearts-container">
+                <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+            </div>
+        </div>
+        <div class="hint-btn" onclick="alert('探员提醒：留意只占1个窗户的颜色！')">💡 线索</div>
+    </div>
+
+    <!-- 规则面板 -->
+    <div class="rules-container" id="rules-panel">
+        <div class="rule-item">每种颜色<span class="rule-hl">1</span>名罪犯</div>
+        <div class="rule-divider"></div>
+        <div class="rule-item">每行每列仅<br>有<span class="rule-hl">1</span>名罪犯</div>
+        <div class="rule-divider"></div>
+        <div class="rule-item">罪犯不能相<br>邻躲藏</div>
+    </div>
+    
+    <div class="counter-pill-wrapper">
+        <div class="counter-pill">
+            🦹 剩余罪犯: <span class="counter-red" id="thief-counter">5</span>
+        </div>
+    </div>
+
+    <!-- 中部网格与操作区 -->
+    <div class="main-interaction-area">
+        <div class="board-wrapper">
+            <!-- 挂载 PIXI 动画的底层 -->
+            <div id="pixi-canvas-container"></div>
+            <!-- DOM 网格表层，用于接收点击 -->
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <div class="controls-guide">
+            <div class="guide-item"><div class="guide-box">👆</div><div>单击排除</div><span>标记 ✖</span></div>
+            <div class="guide-item"><div class="guide-box">✌️</div><div>双击破门</div><span>抓捕 🦹</span></div>
+        </div>
+    </div>
+
+    <div id="victory-screen">
+        <div class="victory-title">街区已肃清</div>
+        <div class="big-icon">🚓</div>
+        <div class="coin-pill" style="font-size: 20px; padding: 10px 25px; background: rgba(0,0,0,0.8); border-width: 3px;">赏金入账 +200</div>
+        <button class="v-btn" onclick="nextLevel()">前往下个街区</button>
+    </div>
+</div>
+
+<script>
+    // ================= 配置区域 =================
+    const SPINE_CONFIG = {
+        windowUrl: 'AN/window1/window1.json',
+        peopleUrl: 'AN/people1/people1.json',
+        originX: 0.5, 
+        originY: 0.5, 
+        baseWidth: 82, 
+        baseHeight: 116
+    };
+
+    // ================= 6个关卡数据 =================
+    const levelData =[
+        { title: "第1街区", regions: [[1,1,2,3,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,4,3,3,3],[5,5,5,5,5,3],[6,5,5,5,5,5]], solution: [[0,1,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0]], initialThief: {r:3, c:2} },
+        { title: "第2街区", regions: [[1,1,1,2,2,2],[3,1,1,2,2,5],[3,3,4,4,2,5],[3,4,4,4,5,5],[6,6,6,4,5,5],[6,6,6,6,6,5]], solution: [[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0]], initialThief: {r:2, c:0} },
+        { title: "第3街区", regions: [[2,2,2,1,1,1],[2,2,2,3,3,1],[4,2,3,3,3,1],[4,4,5,3,3,1],[4,6,5,5,5,5],[6,6,6,6,5,5]], solution: [[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[0,1,0,0,0,0],[0,0,0,1,0,0],[1,0,0,0,0,0]], initialThief: {r:4, c:3} },
+        { title: "第4街区", regions: [[1,1,1,1,2,2],[3,3,6,6,2,2],[3,3,6,6,4,4],[3,3,6,6,4,4],[5,6,6,6,4,4],[5,5,5,6,6,6]], solution: [[0,0,1,0,0,0],[0,0,0,0,0,1],[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0]], initialThief: {r:0, c:2} },
+        { title: "第5街区", regions: [[1,1,2,2,2,2],[1,1,1,2,2,2],[3,3,1,4,4,2],[3,3,4,4,4,5],[3,6,6,4,5,5],[6,6,6,6,5,5]], solution: [[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0]], initialThief: {r:3, c:3} },
+        { title: "第6街区", regions: [[1,1,1,2,2,2],[1,1,3,2,2,2],[3,3,3,4,2,2],[5,3,4,4,4,4],[5,5,4,6,6,4],[5,5,6,6,6,6]], solution: [[0,0,1,0,0,0],[0,0,0,0,0,1],[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0]], initialThief: {r:4, c:0} }
+    ];
+
+    let currentLevelIndex = 0;
+    let currentLevel;
+    let playerState;
+    let lives;
+    let thievesRemaining;
+    let totalCoins = 1400;
+
+    let clickTimeout = null;
+    let lastClickedCell = null;
+    let availableFailAnims =[];
+
+    const gridEl = document.getElementById('grid');
+
+    // ================= PIXI & Spine 系统 =================
+    let pixiApp;
+    let windowContainer, peopleContainer;
+    let windowInstances =[];
+    let peopleInstances =[]; 
+
+    function getAnimDuration(spine, animName) {
+        if (!spine || !spine.spineData) return 0.5;
+        const anim = spine.spineData.findAnimation(animName);
+        return anim ? anim.duration : 0.5;
+    }
+
+    function safePlaySpine(spine, track, animName, loop, delay = 0) {
+        if (!spine || !spine.spineData) return;
+        if (spine.spineData.findAnimation(animName)) {
+            if (delay === -1) {
+                spine.state.setAnimation(track, animName, loop);
+            } else {
+                spine.state.addAnimation(track, animName, loop, delay);
+            }
+        } else {
+            console.warn(`[Spine 警告] 找不到名为 '${animName}' 的动画！请确认 Spine 动画命名是否一致。`);
+        }
+    }
+
+    function initPixiAndSpine() {
+        const container = document.getElementById('pixi-canvas-container');
+        pixiApp = new PIXI.Application({
+            transparent: true, resizeTo: container, autoDensity: true, resolution: window.devicePixelRatio || 1,
+        });
+        container.appendChild(pixiApp.view);
+
+        peopleContainer = new PIXI.Container();
+        windowContainer = new PIXI.Container();
+        pixiApp.stage.addChild(peopleContainer); 
+        pixiApp.stage.addChild(windowContainer); 
+
+        PIXI.Loader.shared
+            .add('windowSpine', SPINE_CONFIG.windowUrl)
+            .add('peopleSpine', SPINE_CONFIG.peopleUrl)
+            .load((loader, resources) => {
+                if (resources.windowSpine.error || resources.peopleSpine.error) {
+                    alert("⚠️ Spine 文件加载失败！请确保本地有 AN 文件夹及对应文件，并且使用 Live Server 运行本网页！");
+                    loadLevel(0); 
+                    return;
+                }
+
+                const windowData = resources.windowSpine.spineData;
+                const peopleData = resources.peopleSpine.spineData;
+                
+                for (let i = 0; i < 36; i++) {
+                    const pSpine = new PIXI.spine.Spine(peopleData);
+                    pSpine.visible = false; 
+                    peopleInstances.push(pSpine);
+                    peopleContainer.addChild(pSpine);
+
+                    const wSpine = new PIXI.spine.Spine(windowData);
+                    windowInstances.push(wSpine);
+                    windowContainer.addChild(wSpine);
+                }
+
+                const resizeObserver = new ResizeObserver(() => {
+                    if (pixiApp) pixiApp.resize();
+                    updateSpinePositions();
+                });
+                resizeObserver.observe(gridEl);
+                resizeObserver.observe(document.getElementById('app')); 
+
+                loadLevel(0);
+            });
+    }
+
+    function updateSpinePositions() {
+        if (!pixiApp || windowInstances.length === 0) return;
+        const container = document.getElementById('pixi-canvas-container');
+        const containerRect = container.getBoundingClientRect();
+        const cells = gridEl.children;
+        if (cells.length < 36) return;
+
+        for (let i = 0; i < 36; i++) {
+            const cell = cells[i];
+            const wSpine = windowInstances[i];
+            const pSpine = peopleInstances[i];
+            const cellRect = cell.getBoundingClientRect();
+
+            if (cellRect.width === 0) continue; 
+
+            const x = cellRect.left - containerRect.left;
+            const y = cellRect.top - containerRect.top;
+            
+            wSpine.x = pSpine.x = x + cellRect.width * SPINE_CONFIG.originX;
+            wSpine.y = pSpine.y = y + cellRect.height * SPINE_CONFIG.originY;
+            
+            const targetScale = cellRect.width / SPINE_CONFIG.baseWidth;
+            wSpine.scale.set(targetScale);
+            pSpine.scale.set(targetScale);
+        }
+    }
+
+
+    // ================= 游戏主逻辑 =================
+    function loadLevel(index) {
+        if (index >= levelData.length) {
+            alert("通关！夜城已恢复宁静！");
+            return;
+        }
+
+        document.getElementById('victory-screen').style.display = 'none';
+        currentLevel = levelData[index];
+        document.getElementById('level-display').innerText = currentLevel.title;
+        
+        lives = 3;
+        document.querySelectorAll('.heart').forEach(h => h.style.opacity = '1');
+
+        thievesRemaining = 5; 
+        document.getElementById('thief-counter').innerText = thievesRemaining;
+
+        // 【新增：每次加载关卡触发规则面板跳动特效】
+        const rulesPanel = document.getElementById('rules-panel');
+        rulesPanel.classList.remove('attention-jump');
+        void rulesPanel.offsetWidth; // 触发重绘，让动画可以重新播放
+        rulesPanel.classList.add('attention-jump');
+
+        availableFailAnims =['people1', 'people2', 'people3', 'people4'].sort(() => Math.random() - 0.5);
+
+        playerState = Array(6).fill().map(() => Array(6).fill(0));
+        playerState[currentLevel.initialThief.r][currentLevel.initialThief.c] = 2;
+
+        gridEl.innerHTML = '';
+        for (let r = 0; r < 6; r++) {
+            for (let c = 0; c < 6; c++) {
+                const cell = document.createElement('div');
+                cell.className = `cell`;
+                cell.onmousedown = (e) => { e.preventDefault(); handleCellInteraction(r, c); };
+                cell.ontouchstart = (e) => { e.preventDefault(); handleCellInteraction(r, c); };
+                gridEl.appendChild(cell);
+
+                const spineIndex = r * 6 + c;
+                const wSpine = windowInstances[spineIndex];
+                const pSpine = peopleInstances[spineIndex];
+
+                if (wSpine && pSpine) {
+                    const skinColor = currentLevel.regions[r][c]; 
+                    try {
+                        wSpine.skeleton.setSkinByName(`window${skinColor}`);
+                        wSpine.skeleton.setSlotsToSetupPose();
+                    } catch (e) { }
+                    
+                    if (playerState[r][c] === 2) {
+                        pSpine.visible = true;
+                        safePlaySpine(wSpine, 0, 'open', false, -1);
+                        safePlaySpine(wSpine, 0, 'wait', true, 0);
+                        safePlaySpine(pSpine, 0, 'hit', true, -1); 
+                    } else {
+                        pSpine.visible = false;
+                        safePlaySpine(wSpine, 0, 'idle', true, -1);
+                    }
+                }
+            }
+        }
+        
+        setTimeout(updateSpinePositions, 50);
+        updateBoardView();
+    }
+
+    function handleCellInteraction(r, c) {
+        if (lives <= 0) return; 
+        if (playerState[r][c] === 2 || playerState[r][c] === 4) return; 
+
+        let currentCellID = `${r}-${c}`;
+
+        if (clickTimeout !== null && lastClickedCell === currentCellID) {
+            clearTimeout(clickTimeout);
+            clickTimeout = null;
+            lastClickedCell = null;
+            executeDoubleTapAction(r, c);
+        } else {
+            if (clickTimeout !== null) {
+                clearTimeout(clickTimeout);
+                let[lastR, lastC] = lastClickedCell.split('-');
+                executeSingleTapAction(parseInt(lastR), parseInt(lastC));
+            }
+            lastClickedCell = currentCellID;
+            clickTimeout = setTimeout(() => {
+                clickTimeout = null;
+                lastClickedCell = null;
+                executeSingleTapAction(r, c);
+            }, 230); 
+        }
+    }
+
+    function executeSingleTapAction(r, c) {
+        let state = playerState[r][c];
+        if (state === 0) {
+            playerState[r][c] = 1; 
+        } else if (state === 1 || state === 3) {
+            playerState[r][c] = 0; 
+        }
+        updateBoardView();
+    }
+
+    function executeDoubleTapAction(r, c) {
+        const wSpine = windowInstances[r * 6 + c];
+        const pSpine = peopleInstances[r * 6 + c];
+
+        if (currentLevel.solution[r][c] === 1) {
+            // ✅ 抓对
+            playerState[r][c] = 2; 
+            thievesRemaining--;
+            
+            if (wSpine && pSpine) {
+                pSpine.visible = true;
+                safePlaySpine(wSpine, 0, 'open', false, -1);
+                safePlaySpine(wSpine, 0, 'wait', true, 0);
+                safePlaySpine(pSpine, 0, 'people0', false, -1);
+            }
+
+            const cellElement = gridEl.children[r * 6 + c];
+            shootConfetti(cellElement);
+            updateBoardView();
+            checkWin();
+
+        } else {
+            // ❌ 抓错
+            playerState[r][c] = 4; // 锁定
+            updateBoardView(); 
+
+            let openDur = getAnimDuration(wSpine, 'open');
+            let endDur = getAnimDuration(wSpine, 'end');
+            
+            if (wSpine && pSpine) {
+                pSpine.visible = true;
+                let failAnim = availableFailAnims.pop() || 'people1'; 
+                
+                safePlaySpine(wSpine, 0, 'open', false, -1);
+                safePlaySpine(pSpine, 0, failAnim, false, -1);
+                
+                safePlaySpine(wSpine, 0, 'end', false, 0);
+                safePlaySpine(wSpine, 0, 'idle', true, 0);
+            }
+
+            let totalAnimDuration = (openDur + endDur) * 1000;
+            setTimeout(() => {
+                if (pSpine) pSpine.visible = false; 
+                playerState[r][c] = 3; 
+                updateBoardView();
+                loseLife();
+            }, totalAnimDuration);
+        }
+    }
+
+    // ================= 视图与特效 =================
+    function updateBoardView() {
+        const cells = gridEl.children;
+        if(cells.length === 0) return;
+
+        for (let i = 0; i < 36; i++) {
+            const r = Math.floor(i / 6);
+            const c = i % 6;
+            const state = playerState[r][c];
+            const cell = cells[i];
+            
+            if (cell.dataset.state != state) {
+                cell.dataset.state = state;
+                cell.innerHTML = '';
+                
+                if (state === 1) {
+                    cell.innerHTML = '<span class="mark-x">✖</span>';
+                } else if (state === 3) {
+                    cell.innerHTML = '<span class="mark-error">✖</span>';
+                }
+            }
+        }
+    }
+
+    function shootConfetti(cell) {
+        const rect = cell.getBoundingClientRect();
+        const appRect = document.getElementById('app').getBoundingClientRect();
+        const centerX = rect.left - appRect.left + rect.width / 2;
+        const centerY = rect.top - appRect.top + rect.height / 2;
+        const colors =['#f2a2c0', '#74c2f2', '#ebd160', '#4dbfa3', '#d96880', '#ffffff'];
+
+        // 【升级】碎纸片翻倍到 45个，带来巨大的爆裂感
+        for (let i = 0; i < 45; i++) {
+            const p = document.createElement('div');
+            p.className = 'confetti-particle';
+            p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            p.style.left = centerX + 'px';
+            p.style.top = centerY + 'px';
+            
+            // 【升级】爆炸扩散范围更广，且有一定的抛物线高抛效果
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 60 + Math.random() * 80; 
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity - 40; 
+            const rot = Math.random() * 720 + 360; 
+
+            p.style.setProperty('--tx', tx + 'px');
+            p.style.setProperty('--ty', ty + 'px');
+            p.style.setProperty('--rot', rot + 'deg');
+
+            document.getElementById('app').appendChild(p);
+            setTimeout(() => p.remove(), 800); // 清理时间同步加长
+        }
+    }
+
+    function loseLife() {
+        lives--;
+        const hearts = document.querySelectorAll('.heart');
+        if (lives >= 0) hearts[lives].style.opacity = '0.2';
+        if (lives === 0) setTimeout(() => {
+            alert('罪犯逃脱！准备重新部署...');
+            loadLevel(currentLevelIndex);
+        }, 300);
+    }
+
+    function checkWin() {
+        document.getElementById('thief-counter').innerText = thievesRemaining;
+        if (thievesRemaining === 0 && lives > 0) {
+            setTimeout(() => {
+                document.getElementById('victory-screen').style.display = 'flex';
+                totalCoins += 200;
+                document.getElementById('total-coins').innerText = totalCoins;
+            }, 600); 
+        }
+    }
+
+    function nextLevel() {
+        currentLevelIndex++;
+        loadLevel(currentLevelIndex);
+    }
+
+    document.getElementById('total-coins').innerText = totalCoins;
+    
+    // 启动系统
+    initPixiAndSpine();
+
+</script>
+</body>
+</html>
