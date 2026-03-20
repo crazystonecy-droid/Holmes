@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 屏蔽谷歌翻译插件的报错 -->
+    <meta name="google" content="notranslate">
     <title>夜城神探：午夜追凶</title>
     
     <!-- 引入 PixiJS 和 pixi-spine -->
@@ -17,8 +19,8 @@
 
         #app { 
             width: 100%; height: 100vh; max-width: 500px; position: relative; 
-            background: url('./img/bg1.png') center center / cover no-repeat;
-            background-color: #2a2c36; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background: url('./img/bg1.png') center center / cover no-repeat, #2a2c36;
+            overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         /* 顶部 UI */
@@ -56,10 +58,10 @@
 
         @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* 全新纯白/纯红 X 标记 */
-        .mark-x { color: #ffffff; font-weight: 900; font-family: sans-serif; font-size: 30px; opacity: 1; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 8px rgba(255,255,255,0.7), 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
+        /* 核心修复：使用了更安全的乘号字符，并增大了字号以保持视觉冲击力 */
+        .mark-x { color: #ffffff; font-weight: 900; font-family: sans-serif; font-size: 50px; line-height: 1; opacity: 1; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
         
-        .mark-error { color: #ff0000; font-weight: 900; font-family: sans-serif; font-size: 38px; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-shadow: 0 0 15px rgba(255,0,0,0.8), 0 2px 4px rgba(0,0,0,0.8); }
+        .mark-error { color: #ff0000; font-weight: 900; font-family: sans-serif; font-size: 60px; line-height: 1; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-shadow: 0 0 15px rgba(255,0,0,0.8), 0 2px 4px rgba(0,0,0,0.8); }
 
         .confetti-particle { position: absolute; width: 8px; height: 16px; border-radius: 2px; z-index: 50; pointer-events: none; animation: blast 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
         @keyframes blast { 0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.6) rotate(var(--rot)); opacity: 0; } }
@@ -76,8 +78,8 @@
             .board-wrapper { width: 78%; padding: 8px; margin-bottom: 15px; } 
             .grid { gap: 4px; } 
             #pixi-canvas-container { top: 8px; left: 8px; right: 8px; bottom: 8px; }
-            .mark-x { font-size: 24px; }
-            .mark-error { font-size: 30px; }
+            .mark-x { font-size: 40px; }
+            .mark-error { font-size: 50px; }
             .guide-box { width: 38px; height: 38px; font-size: 16px; }
             .controls-guide { transform: scale(0.95); margin-bottom: 5px; }
         }
@@ -100,7 +102,7 @@
                 <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
             </div>
         </div>
-        <div class="hint-btn" onclick="alert('探员提醒：留意只占1个窗户的颜色区域！\n\n【操作指南】\n按住屏幕滑动：可批量画✖\n双击窗户：破门抓捕')">💡 线索</div>
+        <div class="hint-btn" onclick="alert('探员提醒：留意只占1个窗户的颜色区域！\n\n【操作指南】\n按住屏幕滑动：可批量画排查\n双击窗户：破门抓捕')">💡 线索</div>
     </div>
 
     <!-- 规则面板 -->
@@ -126,7 +128,7 @@
         </div>
 
         <div class="controls-guide">
-            <div class="guide-item"><div class="guide-box">👆</div><div>点击/滑动</div><span>排查 ✖</span></div>
+            <div class="guide-item"><div class="guide-box">👆</div><div>点击/滑动</div><span>排查 ×</span></div>
             <div class="guide-item"><div class="guide-box">✌️</div><div>双击破门</div><span>抓捕 🦹</span></div>
         </div>
     </div>
@@ -163,7 +165,6 @@
     const gridEl = document.getElementById('grid');
 
     // ================= Q弹缩放动效系统 (HTML与PIXI同步) =================
-    // 为了让 PIXI 动画缩放自然，这里写了一个简单的缓动渲染插值
     function tweenSpineScale(spine, targetScale, durationMs) {
         if (!spine || !spine.baseScale || !pixiApp) return;
         let startScale = spine.scale.x;
@@ -179,7 +180,7 @@
                 pixiApp.ticker.remove(spine.tweenTicker);
                 spine.tweenTicker = null;
             } else {
-                let easeProgress = progress * (2 - progress); // ease-out-quad
+                let easeProgress = progress * (2 - progress);
                 let currentScale = startScale + (targetScale - startScale) * easeProgress;
                 spine.scale.set(currentScale);
             }
@@ -187,23 +188,19 @@
         pixiApp.ticker.add(spine.tweenTicker);
     }
 
-    // 触发单个窗户的缩放动效
     function bounceCell(r, c) {
         const index = r * 6 + c;
         const cell = gridEl.children[index];
         const wSpine = windowInstances[index];
         const pSpine = peopleInstances[index];
         
-        // 1. 触发 HTML 上层格子的缩小
         cell.style.transform = 'scale(0.85)';
         
-        // 2. 触发 PIXI 底层骨骼动画的缩小
         if (wSpine && wSpine.baseScale) {
             tweenSpineScale(wSpine, wSpine.baseScale * 0.85, 100);
             if (pSpine) tweenSpineScale(pSpine, wSpine.baseScale * 0.85, 100);
         }
 
-        // 3. 短暂延迟后自动回弹恢复
         setTimeout(() => {
             cell.style.transform = 'scale(1)';
             if (wSpine && wSpine.baseScale) {
@@ -237,16 +234,14 @@
         let state = playerState[r][c];
         const currentCellID = `${r}-${c}`;
 
-        if (state === 2 || state === 4) return; // 小偷已抓到或正在播放动画，锁定
+        if (state === 2 || state === 4) return; 
 
-        // 触发丝滑的整体 Q 弹缩放
         bounceCell(r, c);
 
         const currentTime = new Date().getTime();
         const isDoubleTap = (currentTime - lastTapTime < 300) && (lastTapCell === currentCellID);
 
         if (isDoubleTap) {
-            // == 双击：破门抓捕 ==
             isDragging = false; 
             lastTapTime = 0; 
             lastTapCell = null;
@@ -254,7 +249,6 @@
             return;
         }
 
-        // == 单击/按住：准备涂抹 ==
         isDragging = true;
         hasDragged = false;
         dragStartPos = { x: e.clientX, y: e.clientY };
@@ -262,7 +256,6 @@
         lastTapTime = currentTime;
         lastTapCell = currentCellID;
 
-        // 智能模式：点在空的上面画叉(1)，点在叉上擦除(0)
         if (state === 0) {
             dragMode = 1;
             playerState[r][c] = 1;
@@ -282,7 +275,7 @@
         
         if (!hasDragged && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
             hasDragged = true;
-            lastTapTime = 0; // 一旦滑动，不再判定为双击
+            lastTapTime = 0; 
         }
 
         if (hasDragged) {
@@ -297,7 +290,6 @@
                 if (cellID !== lastPaintedCell) {
                     paintCell(r, c, dragMode);
                     lastPaintedCell = cellID;
-                    // 滑动经过时触发 Q 弹缩放
                     bounceCell(r, c);
                 }
             }
@@ -358,7 +350,9 @@
             .add('peopleSpine', SPINE_CONFIG.peopleUrl)
             .load((loader, resources) => {
                 if (resources.windowSpine.error || resources.peopleSpine.error) {
-                    console.error("加载错误"); loadLevel(0); return;
+                    alert("⚠️ 严重错误：未找到动画文件！\n\n请确保你的 GitHub 仓库根目录下有：\n1. AN/window1/window1.json\n2. AN/people1/people1.json\n\n注意大小写必须完全匹配！");
+                    loadLevel(0); 
+                    return;
                 }
                 const windowData = resources.windowSpine.spineData;
                 const peopleData = resources.peopleSpine.spineData;
@@ -400,7 +394,6 @@
             const y = cellRect.top - containerRect.top;
             
             const targetScale = cellRect.width / SPINE_CONFIG.baseWidth;
-            // 记录基础缩放值，用于动画复原
             wSpine.baseScale = targetScale;
             
             wSpine.x = pSpine.x = x + cellRect.width * SPINE_CONFIG.originX;
@@ -531,11 +524,11 @@
                 cell.dataset.state = state;
                 cell.innerHTML = '';
                 
-                // 纯白和纯红的标记插入
+                // 【核心修复】：将特殊符号 ✖ 替换为标准的纯文字数学乘号 ×
                 if (state === 1) {
-                    cell.innerHTML = '<span class="mark-x">✖</span>';
+                    cell.innerHTML = '<span class="mark-x">×</span>';
                 } else if (state === 3) {
-                    cell.innerHTML = '<span class="mark-error">✖</span>';
+                    cell.innerHTML = '<span class="mark-error">×</span>';
                 }
             }
         }
