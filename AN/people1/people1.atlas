@@ -75,8 +75,8 @@ hei
   offset: 0, 0
   index: -1
 jinghao
-  rotate: false
-  xy: 253, 56
+  rotate: true
+  xy: 262, 29
   size: 23, 22
   orig: 23, 22
   offset: 0, 0
@@ -118,7 +118,7 @@ people0-1
   index: -1
 people0-2
   rotate: false
-  xy: 80, 207
+  xy: 280, 259
   size: 3, 6
   orig: 3, 6
   offset: 0, 0
@@ -132,21 +132,21 @@ people1
   index: -1
 people1-1
   rotate: true
-  xy: 264, 80
+  xy: 264, 82
   size: 40, 48
   orig: 40, 48
   offset: 0, 0
   index: -1
 people1-2
-  rotate: false
-  xy: 278, 53
+  rotate: true
+  xy: 253, 54
   size: 26, 25
   orig: 26, 25
   offset: 0, 0
   index: -1
 people1-3
   rotate: true
-  xy: 66, 187
+  xy: 262, 1
   size: 26, 12
   orig: 26, 12
   offset: 0, 0
@@ -167,9 +167,30 @@ people2
   index: -1
 people3
   rotate: true
-  xy: 264, 122
-  size: 57, 53
-  orig: 57, 53
+  xy: 264, 124
+  size: 55, 53
+  orig: 55, 53
+  offset: 0, 0
+  index: -1
+people3-1
+  rotate: false
+  xy: 66, 189
+  size: 16, 24
+  orig: 16, 25
+  offset: 0, 1
+  index: -1
+people3-2
+  rotate: true
+  xy: 280, 55
+  size: 25, 29
+  orig: 25, 29
+  offset: 0, 0
+  index: -1
+people3-3
+  rotate: true
+  xy: 44, 8
+  size: 27, 13
+  orig: 27, 15
   offset: 0, 0
   index: -1
 people4-1

@@ -12,7 +12,8 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, "Segoe UI", sans-serif; }
 
-        body { background-color: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; touch-action: manipulation; }
+        /* 阻止全局的默认手势操作，防止滑动时页面跟着跑 */
+        body { background-color: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; touch-action: none; overscroll-behavior: none; }
 
         #app { 
             width: 100%; height: 100vh; max-width: 500px; position: relative; 
@@ -21,55 +22,65 @@
         }
 
         /* 顶部 UI */
-        .top-ui { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 20px 10px; }
-        .coin-pill { border: 2px solid #ebd160; border-radius: 8px; padding: 5px 12px; font-size: 14px; color: #ebd160; font-weight: bold; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-        .level-title { font-size: 20px; color: #fff; font-weight: bold; margin-bottom: 5px; text-align: center; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+        .top-ui { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px 5px; }
+        .coin-pill { border: 2px solid #ebd160; border-radius: 8px; padding: 4px 10px; font-size: 13px; color: #ebd160; font-weight: bold; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        .level-title { font-size: 22px; color: #fff; font-weight: bold; margin-bottom: 4px; text-align: center; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
         .hearts-container { display: flex; justify-content: center; gap: 4px; }
-        .heart { color: #d96880; font-size: 14px; transition: 0.2s; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));}
-        .hint-btn { border: 2px solid #74c2f2; border-radius: 8px; padding: 5px 12px; font-size: 14px; color: #74c2f2; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); cursor: pointer;}
+        .heart { color: #d96880; font-size: 16px; transition: 0.2s; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));}
+        .hint-btn { border: 2px solid #74c2f2; border-radius: 8px; padding: 4px 10px; font-size: 13px; color: #74c2f2; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); cursor: pointer;}
 
         /* 规则面板 */
-        .rules-container { width: 92%; margin: 5px auto 0; background: rgba(255, 255, 255, 0.95); border-radius: 22px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: flex; align-items: center; padding: 16px 5px; z-index: 10; position: relative; }
-        .rule-item { flex: 1; text-align: center; font-size: 13px; color: #444; line-height: 1.5; font-weight: 500;}
-        .rule-hl { color: #1a73e8; font-weight: bold; font-size: 16px; margin: 0 2px;}
-        .rule-divider { width: 1px; height: 35px; background: #e5e5e5; }
+        .rules-wrapper { position: relative; width: 90%; margin: 15px auto 30px; z-index: 10; }
+        .rules-container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: flex; align-items: center; padding: 12px 5px; }
+        .rule-item { flex: 1; text-align: center; font-size: 12px; color: #444; line-height: 1.4; font-weight: 500;}
+        .rule-hl { color: #1a73e8; font-weight: bold; font-size: 14px; margin: 0 2px;}
+        .rule-divider { width: 1px; height: 30px; background: #e5e5e5; }
         
-        @keyframes attentionJump {
-            0%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-12px); }
-            50% { transform: translateY(0); }
-            70% { transform: translateY(-6px); }
-            85% { transform: translateY(0); }
-        }
+        .counter-pill { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); background: #ffffff; border-radius: 20px; padding: 4px 16px; font-size: 13px; font-weight: bold; color: #555; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid rgba(255,255,255,0.8); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .counter-red { color: #ea4335; font-size: 16px; }
+
+        @keyframes attentionJump { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } 50% { transform: translateY(0); } 70% { transform: translateY(-5px); } }
         .attention-jump { animation: attentionJump 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
 
-        .counter-pill-wrapper { display: flex; justify-content: center; margin-top: -12px; z-index: 11; position: relative; }
-        .counter-pill { background: #ffffff; border-radius: 20px; padding: 6px 20px; font-size: 14px; font-weight: bold; color: #555; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px; }
-        .counter-red { color: #ea4335; font-size: 18px; }
-
-        .main-interaction-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 5; }
+        /* 主体交互区 */
+        .main-interaction-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 5; padding-bottom: 10px; }
         
-        .board-wrapper { width: 88%; max-width: 360px; padding: 12px; margin-top: 50px; margin-bottom: 30px; position: relative; }
+        .board-wrapper { width: 84%; max-width: 340px; background-color: #3b2854; border: 2px solid #2d1835; border-radius: 8px 8px 0 0; border-top: 4px solid #5c3a82; padding: 12px 10px; position: relative; box-shadow: 0 -10px 30px rgba(0,0,0,0.3); margin-bottom: 25px; }
 
-        #pixi-canvas-container { position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; pointer-events: none; z-index: 1; }
+        #pixi-canvas-container { position: absolute; top: 12px; left: 10px; right: 10px; bottom: 12px; pointer-events: none; z-index: 1; }
         
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; position: relative; z-index: 2; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; position: relative; z-index: 2; touch-action: none; }
         
-        .cell { aspect-ratio: 82 / 116; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 28px; cursor: pointer; position: relative; background: transparent; transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
-        .cell:active { transform: scale(0.9); }
+        /* 窗户缩放动画优化：配合底层的PIXI动画 */
+        .cell { aspect-ratio: 82 / 116; border-radius: 2px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; background: transparent; transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center center; }
 
-        @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        .mark-x { color: #fff; font-weight: bold; font-family: sans-serif; font-size: 32px; opacity: 0.9; animation: popIn 0.2s ease-out; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
-        .mark-error { color: #ea4335; font-weight: bold; font-family: sans-serif; font-size: 40px; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; border-radius: 6px; animation: popIn 0.2s ease-out; pointer-events: none; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        /* 全新纯白/纯红 X 标记 */
+        .mark-x { color: #ffffff; font-weight: 900; font-family: sans-serif; font-size: 30px; opacity: 1; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 8px rgba(255,255,255,0.7), 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
+        
+        .mark-error { color: #ff0000; font-weight: 900; font-family: sans-serif; font-size: 38px; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-shadow: 0 0 15px rgba(255,0,0,0.8), 0 2px 4px rgba(0,0,0,0.8); }
 
         .confetti-particle { position: absolute; width: 8px; height: 16px; border-radius: 2px; z-index: 50; pointer-events: none; animation: blast 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
         @keyframes blast { 0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.6) rotate(var(--rot)); opacity: 0; } }
 
-        .controls-guide { width: 85%; display: flex; justify-content: space-around; margin-bottom: 30px;}
-        .guide-item { display: flex; flex-direction: column; align-items: center; color: #eaeaea; font-size: 13px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
-        .guide-box { width: 50px; height: 50px; background: rgba(30, 25, 34, 0.8); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 22px; margin-bottom: 6px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.4);}
-        .guide-item span { color: #ebd160; font-weight: bold; margin-top: 3px; }
+        /* 底部操作提示 */
+        .controls-guide { width: 85%; display: flex; justify-content: space-around; margin-bottom: 10px;}
+        .guide-item { display: flex; flex-direction: column; align-items: center; color: #eaeaea; font-size: 12px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
+        .guide-box { width: 44px; height: 44px; background: rgba(30, 25, 34, 0.8); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; margin-bottom: 4px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.4);}
+        .guide-item span { color: #ebd160; font-weight: bold; margin-top: 2px; }
+
+        @media (max-height: 700px) {
+            .top-ui { padding-top: 10px; }
+            .rules-wrapper { margin-bottom: 22px; }
+            .board-wrapper { width: 78%; padding: 8px; margin-bottom: 15px; } 
+            .grid { gap: 4px; } 
+            #pixi-canvas-container { top: 8px; left: 8px; right: 8px; bottom: 8px; }
+            .mark-x { font-size: 24px; }
+            .mark-error { font-size: 30px; }
+            .guide-box { width: 38px; height: 38px; font-size: 16px; }
+            .controls-guide { transform: scale(0.95); margin-bottom: 5px; }
+        }
 
         #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 25, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .victory-title { color: #74c2f2; font-size: 32px; font-weight: bold; margin-bottom: 15px; letter-spacing: 2px;}
@@ -80,6 +91,7 @@
 <body>
 
 <div id="app">
+    <!-- 顶部 UI -->
     <div class="top-ui">
         <div class="coin-pill">💵 <span id="total-coins">1400</span></div>
         <div>
@@ -88,48 +100,47 @@
                 <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
             </div>
         </div>
-        <div class="hint-btn" onclick="alert('探员提醒：留意只占1个窗户的颜色！')">💡 线索</div>
+        <div class="hint-btn" onclick="alert('探员提醒：留意只占1个窗户的颜色区域！\n\n【操作指南】\n按住屏幕滑动：可批量画✖\n双击窗户：破门抓捕')">💡 线索</div>
     </div>
 
-    <div class="rules-container" id="rules-panel">
-        <div class="rule-item">每种颜色<span class="rule-hl">1</span>名罪犯</div>
-        <div class="rule-divider"></div>
-        <div class="rule-item">每行每列仅<br>有<span class="rule-hl">1</span>名罪犯</div>
-        <div class="rule-divider"></div>
-        <div class="rule-item">罪犯不能相<br>邻躲藏</div>
-    </div>
-    
-    <div class="counter-pill-wrapper">
+    <!-- 规则面板 -->
+    <div class="rules-wrapper" id="rules-panel">
+        <div class="rules-container">
+            <div class="rule-item">每种颜色<br><span class="rule-hl">1</span>名罪犯</div>
+            <div class="rule-divider"></div>
+            <div class="rule-item">每行每列仅<br>有<span class="rule-hl">1</span>名罪犯</div>
+            <div class="rule-divider"></div>
+            <div class="rule-item">罪犯不能相<br>邻躲藏</div>
+        </div>
         <div class="counter-pill">
             🦹 剩余罪犯: <span class="counter-red" id="thief-counter">5</span>
         </div>
     </div>
-
-    <!-- 中部网格与操作区 -->
+    
+    <!-- 中部交互区 -->
     <div class="main-interaction-area">
         <div class="board-wrapper">
             <div id="pixi-canvas-container"></div>
+            <!-- 网格层 -->
             <div class="grid" id="grid"></div>
         </div>
 
         <div class="controls-guide">
-            <div class="guide-item"><div class="guide-box">👆</div><div>单击排除</div><span>标记 ✖</span></div>
+            <div class="guide-item"><div class="guide-box">👆</div><div>点击/滑动</div><span>排查 ✖</span></div>
             <div class="guide-item"><div class="guide-box">✌️</div><div>双击破门</div><span>抓捕 🦹</span></div>
         </div>
     </div>
 
     <div id="victory-screen">
         <div class="victory-title">街区已肃清</div>
-        <div class="big-icon">🚓</div>
+        <div class="big-icon">🕵️‍♂️</div>
         <div class="coin-pill" style="font-size: 20px; padding: 10px 25px; background: rgba(0,0,0,0.8); border-width: 3px;">赏金入账 +200</div>
         <button class="v-btn" onclick="nextLevel()">前往下个街区</button>
     </div>
 </div>
 
 <script>
-    // ================= 配置区域 =================
     const SPINE_CONFIG = {
-        // 注意前面的 './'，这能更安全地匹配 GitHub 相对路径
         windowUrl: './AN/window1/window1.json',
         peopleUrl: './AN/people1/people1.json',
         originX: 0.5, originY: 0.5, baseWidth: 82, baseHeight: 116
@@ -138,10 +149,7 @@
     const levelData =[
         { title: "第1街区", regions: [[1,1,2,3,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,4,3,3,3],[5,5,5,5,5,3],[6,5,5,5,5,5]], solution: [[0,1,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0]], initialThief: {r:3, c:2} },
         { title: "第2街区", regions: [[1,1,1,2,2,2],[3,1,1,2,2,5],[3,3,4,4,2,5],[3,4,4,4,5,5],[6,6,6,4,5,5],[6,6,6,6,6,5]], solution: [[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0]], initialThief: {r:2, c:0} },
-        { title: "第3街区", regions: [[2,2,2,1,1,1],[2,2,2,3,3,1],[4,2,3,3,3,1],[4,4,5,3,3,1],[4,6,5,5,5,5],[6,6,6,6,5,5]], solution: [[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[0,1,0,0,0,0],[0,0,0,1,0,0],[1,0,0,0,0,0]], initialThief: {r:4, c:3} },
-        { title: "第4街区", regions: [[1,1,1,1,2,2],[3,3,6,6,2,2],[3,3,6,6,4,4],[3,3,6,6,4,4],[5,6,6,6,4,4],[5,5,5,6,6,6]], solution: [[0,0,1,0,0,0],[0,0,0,0,0,1],[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0]], initialThief: {r:0, c:2} },
-        { title: "第5街区", regions: [[1,1,2,2,2,2],[1,1,1,2,2,2],[3,3,1,4,4,2],[3,3,4,4,4,5],[3,6,6,4,5,5],[6,6,6,6,5,5]], solution: [[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0]], initialThief: {r:3, c:3} },
-        { title: "第6街区", regions: [[1,1,1,2,2,2],[1,1,3,2,2,2],[3,3,3,4,2,2],[5,3,4,4,4,4],[5,5,4,6,6,4],[5,5,6,6,6,6]], solution: [[0,0,1,0,0,0],[0,0,0,0,0,1],[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0]], initialThief: {r:4, c:0} }
+        { title: "第3街区", regions: [[2,2,2,1,1,1],[2,2,2,3,3,1],[4,2,3,3,3,1],[4,4,5,3,3,1],[4,6,5,5,5,5],[6,6,6,6,5,5]], solution: [[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[0,1,0,0,0,0],[0,0,0,1,0,0],[1,0,0,0,0,0]], initialThief: {r:4, c:3} }
     ];
 
     let currentLevelIndex = 0;
@@ -151,11 +159,167 @@
     let thievesRemaining;
     let totalCoins = 1400;
 
-    let clickTimeout = null;
-    let lastClickedCell = null;
     let availableFailAnims =[];
-
     const gridEl = document.getElementById('grid');
+
+    // ================= Q弹缩放动效系统 (HTML与PIXI同步) =================
+    // 为了让 PIXI 动画缩放自然，这里写了一个简单的缓动渲染插值
+    function tweenSpineScale(spine, targetScale, durationMs) {
+        if (!spine || !spine.baseScale || !pixiApp) return;
+        let startScale = spine.scale.x;
+        let startTime = performance.now();
+        
+        if (spine.tweenTicker) pixiApp.ticker.remove(spine.tweenTicker);
+        
+        spine.tweenTicker = () => {
+            let now = performance.now();
+            let progress = (now - startTime) / durationMs;
+            if (progress >= 1) {
+                spine.scale.set(targetScale);
+                pixiApp.ticker.remove(spine.tweenTicker);
+                spine.tweenTicker = null;
+            } else {
+                let easeProgress = progress * (2 - progress); // ease-out-quad
+                let currentScale = startScale + (targetScale - startScale) * easeProgress;
+                spine.scale.set(currentScale);
+            }
+        };
+        pixiApp.ticker.add(spine.tweenTicker);
+    }
+
+    // 触发单个窗户的缩放动效
+    function bounceCell(r, c) {
+        const index = r * 6 + c;
+        const cell = gridEl.children[index];
+        const wSpine = windowInstances[index];
+        const pSpine = peopleInstances[index];
+        
+        // 1. 触发 HTML 上层格子的缩小
+        cell.style.transform = 'scale(0.85)';
+        
+        // 2. 触发 PIXI 底层骨骼动画的缩小
+        if (wSpine && wSpine.baseScale) {
+            tweenSpineScale(wSpine, wSpine.baseScale * 0.85, 100);
+            if (pSpine) tweenSpineScale(pSpine, wSpine.baseScale * 0.85, 100);
+        }
+
+        // 3. 短暂延迟后自动回弹恢复
+        setTimeout(() => {
+            cell.style.transform = 'scale(1)';
+            if (wSpine && wSpine.baseScale) {
+                tweenSpineScale(wSpine, wSpine.baseScale, 150);
+                if (pSpine) tweenSpineScale(pSpine, wSpine.baseScale, 150);
+            }
+        }, 120);
+    }
+
+    // ================= 滑动涂色逻辑 =================
+    let isDragging = false;
+    let dragMode = null; 
+    let hasDragged = false;
+    let dragStartPos = { x: 0, y: 0 };
+    let lastPaintedCell = null;
+    let lastTapTime = 0;
+    let lastTapCell = null;
+
+    gridEl.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('pointermove', handlePointerMove, {passive: false});
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
+
+    function handlePointerDown(e) {
+        if (lives <= 0) return;
+        const cell = e.target.closest('.cell');
+        if (!cell) return;
+        
+        const r = parseInt(cell.dataset.r);
+        const c = parseInt(cell.dataset.c);
+        let state = playerState[r][c];
+        const currentCellID = `${r}-${c}`;
+
+        if (state === 2 || state === 4) return; // 小偷已抓到或正在播放动画，锁定
+
+        // 触发丝滑的整体 Q 弹缩放
+        bounceCell(r, c);
+
+        const currentTime = new Date().getTime();
+        const isDoubleTap = (currentTime - lastTapTime < 300) && (lastTapCell === currentCellID);
+
+        if (isDoubleTap) {
+            // == 双击：破门抓捕 ==
+            isDragging = false; 
+            lastTapTime = 0; 
+            lastTapCell = null;
+            executeDoubleTapAction(r, c);
+            return;
+        }
+
+        // == 单击/按住：准备涂抹 ==
+        isDragging = true;
+        hasDragged = false;
+        dragStartPos = { x: e.clientX, y: e.clientY };
+        lastPaintedCell = currentCellID;
+        lastTapTime = currentTime;
+        lastTapCell = currentCellID;
+
+        // 智能模式：点在空的上面画叉(1)，点在叉上擦除(0)
+        if (state === 0) {
+            dragMode = 1;
+            playerState[r][c] = 1;
+        } else if (state === 1 || state === 3) {
+            dragMode = 0;
+            playerState[r][c] = 0;
+        }
+        updateBoardView(); 
+    }
+
+    function handlePointerMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        const dx = e.clientX - dragStartPos.x;
+        const dy = e.clientY - dragStartPos.y;
+        
+        if (!hasDragged && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+            hasDragged = true;
+            lastTapTime = 0; // 一旦滑动，不再判定为双击
+        }
+
+        if (hasDragged) {
+            const el = document.elementFromPoint(e.clientX, e.clientY);
+            const cell = el ? el.closest('.cell') : null;
+            
+            if (cell && cell.parentElement === gridEl) {
+                const r = parseInt(cell.dataset.r);
+                const c = parseInt(cell.dataset.c);
+                const cellID = `${r}-${c}`;
+                
+                if (cellID !== lastPaintedCell) {
+                    paintCell(r, c, dragMode);
+                    lastPaintedCell = cellID;
+                    // 滑动经过时触发 Q 弹缩放
+                    bounceCell(r, c);
+                }
+            }
+        }
+    }
+
+    function handlePointerUp(e) {
+        isDragging = false;
+    }
+
+    function paintCell(r, c, targetState) {
+        let state = playerState[r][c];
+        if (state === 2 || state === 4) return; 
+        
+        if (targetState === 1 && state === 0) {
+            playerState[r][c] = 1;
+            updateBoardView();
+        } else if (targetState === 0 && (state === 1 || state === 3)) {
+            playerState[r][c] = 0;
+            updateBoardView();
+        }
+    }
 
     // ================= PIXI & Spine 系统 =================
     let pixiApp;
@@ -172,11 +336,8 @@
     function safePlaySpine(spine, track, animName, loop, delay = 0) {
         if (!spine || !spine.spineData) return;
         if (spine.spineData.findAnimation(animName)) {
-            if (delay === -1) {
-                spine.state.setAnimation(track, animName, loop);
-            } else {
-                spine.state.addAnimation(track, animName, loop, delay);
-            }
+            if (delay === -1) spine.state.setAnimation(track, animName, loop);
+            else spine.state.addAnimation(track, animName, loop, delay);
         }
     }
 
@@ -196,21 +357,11 @@
             .add('windowSpine', SPINE_CONFIG.windowUrl)
             .add('peopleSpine', SPINE_CONFIG.peopleUrl)
             .load((loader, resources) => {
-                // 【核心修复】：精准捕获线上错误信息，并在弹窗显示
                 if (resources.windowSpine.error || resources.peopleSpine.error) {
-                    let errMsg = "";
-                    if (resources.windowSpine.error) errMsg += `\n- 窗户文件: ${resources.windowSpine.error.message}`;
-                    if (resources.peopleSpine.error) errMsg += `\n- 人物文件: ${resources.peopleSpine.error.message}`;
-                    
-                    alert(`🚨 发生加载错误！\n${errMsg}\n\n👉 提示: 请检查 GitHub 仓库里的文件夹大小写是不是完全和代码写的一样！(比如 AN/window1/window1.json)`);
-                    
-                    loadLevel(0); 
-                    return;
+                    console.error("加载错误"); loadLevel(0); return;
                 }
-
                 const windowData = resources.windowSpine.spineData;
                 const peopleData = resources.peopleSpine.spineData;
-                
                 for (let i = 0; i < 36; i++) {
                     const pSpine = new PIXI.spine.Spine(peopleData);
                     pSpine.visible = false; 
@@ -227,8 +378,6 @@
                     updateSpinePositions();
                 });
                 resizeObserver.observe(gridEl);
-                resizeObserver.observe(document.getElementById('app')); 
-
                 loadLevel(0);
             });
     }
@@ -247,14 +396,15 @@
             const cellRect = cell.getBoundingClientRect();
 
             if (cellRect.width === 0) continue; 
-
             const x = cellRect.left - containerRect.left;
             const y = cellRect.top - containerRect.top;
             
+            const targetScale = cellRect.width / SPINE_CONFIG.baseWidth;
+            // 记录基础缩放值，用于动画复原
+            wSpine.baseScale = targetScale;
+            
             wSpine.x = pSpine.x = x + cellRect.width * SPINE_CONFIG.originX;
             wSpine.y = pSpine.y = y + cellRect.height * SPINE_CONFIG.originY;
-            
-            const targetScale = cellRect.width / SPINE_CONFIG.baseWidth;
             wSpine.scale.set(targetScale);
             pSpine.scale.set(targetScale);
         }
@@ -262,10 +412,7 @@
 
     // ================= 游戏主逻辑 =================
     function loadLevel(index) {
-        if (index >= levelData.length) {
-            alert("通关！夜城已恢复宁静！");
-            return;
-        }
+        if (index >= levelData.length) index = 0; 
 
         document.getElementById('victory-screen').style.display = 'none';
         currentLevel = levelData[index];
@@ -292,8 +439,8 @@
             for (let c = 0; c < 6; c++) {
                 const cell = document.createElement('div');
                 cell.className = `cell`;
-                cell.onmousedown = (e) => { e.preventDefault(); handleCellInteraction(r, c); };
-                cell.ontouchstart = (e) => { e.preventDefault(); handleCellInteraction(r, c); };
+                cell.dataset.r = r;
+                cell.dataset.c = c;
                 gridEl.appendChild(cell);
 
                 const spineIndex = r * 6 + c;
@@ -324,42 +471,6 @@
         updateBoardView();
     }
 
-    function handleCellInteraction(r, c) {
-        if (lives <= 0) return; 
-        if (playerState[r][c] === 2 || playerState[r][c] === 4) return; 
-
-        let currentCellID = `${r}-${c}`;
-
-        if (clickTimeout !== null && lastClickedCell === currentCellID) {
-            clearTimeout(clickTimeout);
-            clickTimeout = null;
-            lastClickedCell = null;
-            executeDoubleTapAction(r, c);
-        } else {
-            if (clickTimeout !== null) {
-                clearTimeout(clickTimeout);
-                let[lastR, lastC] = lastClickedCell.split('-');
-                executeSingleTapAction(parseInt(lastR), parseInt(lastC));
-            }
-            lastClickedCell = currentCellID;
-            clickTimeout = setTimeout(() => {
-                clickTimeout = null;
-                lastClickedCell = null;
-                executeSingleTapAction(r, c);
-            }, 230); 
-        }
-    }
-
-    function executeSingleTapAction(r, c) {
-        let state = playerState[r][c];
-        if (state === 0) {
-            playerState[r][c] = 1; 
-        } else if (state === 1 || state === 3) {
-            playerState[r][c] = 0; 
-        }
-        updateBoardView();
-    }
-
     function executeDoubleTapAction(r, c) {
         const wSpine = windowInstances[r * 6 + c];
         const pSpine = peopleInstances[r * 6 + c];
@@ -381,7 +492,7 @@
             checkWin();
 
         } else {
-            playerState[r][c] = 4; 
+            playerState[r][c] = 4; // 状态4：动画播放锁定
             updateBoardView(); 
 
             let openDur = getAnimDuration(wSpine, 'open');
@@ -390,10 +501,8 @@
             if (wSpine && pSpine) {
                 pSpine.visible = true;
                 let failAnim = availableFailAnims.pop() || 'people1'; 
-                
                 safePlaySpine(wSpine, 0, 'open', false, -1);
                 safePlaySpine(pSpine, 0, failAnim, false, -1);
-                
                 safePlaySpine(wSpine, 0, 'end', false, 0);
                 safePlaySpine(wSpine, 0, 'idle', true, 0);
             }
@@ -401,9 +510,9 @@
             let totalAnimDuration = (openDur + endDur) * 1000;
             setTimeout(() => {
                 if (pSpine) pSpine.visible = false; 
-                playerState[r][c] = 3; 
+                playerState[r][c] = 3; // 变成红色错误叉
                 updateBoardView();
-                loseLife();
+                loseLife(); 
             }, totalAnimDuration);
         }
     }
@@ -422,6 +531,7 @@
                 cell.dataset.state = state;
                 cell.innerHTML = '';
                 
+                // 纯白和纯红的标记插入
                 if (state === 1) {
                     cell.innerHTML = '<span class="mark-x">✖</span>';
                 } else if (state === 3) {
@@ -449,11 +559,9 @@
             const tx = Math.cos(angle) * velocity;
             const ty = Math.sin(angle) * velocity - 40; 
             const rot = Math.random() * 720 + 360; 
-
             p.style.setProperty('--tx', tx + 'px');
             p.style.setProperty('--ty', ty + 'px');
             p.style.setProperty('--rot', rot + 'deg');
-
             document.getElementById('app').appendChild(p);
             setTimeout(() => p.remove(), 800);
         }
@@ -464,7 +572,7 @@
         const hearts = document.querySelectorAll('.heart');
         if (lives >= 0) hearts[lives].style.opacity = '0.2';
         if (lives === 0) setTimeout(() => {
-            alert('罪犯逃脱！准备重新部署...');
+            alert('目标逃脱！准备重新部署...');
             loadLevel(currentLevelIndex);
         }, 300);
     }
