@@ -30,10 +30,14 @@
         .hint-btn { border: 2px solid #74c2f2; border-radius: 8px; padding: 4px 10px; font-size: 13px; color: #74c2f2; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); cursor: pointer;}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         /* 规则面板 */
 =======
         /* 规则面板与剩余数量 (重构层级，完美悬浮) */
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+        /* 规则面板 */
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
         .rules-wrapper { position: relative; width: 90%; margin: 15px auto 30px; z-index: 10; }
         .rules-container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: flex; align-items: center; padding: 12px 5px; }
         .rule-item { flex: 1; text-align: center; font-size: 12px; color: #444; line-height: 1.4; font-weight: 500;}
@@ -41,15 +45,19 @@
         .rule-divider { width: 1px; height: 30px; background: #e5e5e5; }
         
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         /* 胶囊完美骑在白板下方 */
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
         .counter-pill { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); background: #ffffff; border-radius: 20px; padding: 4px 16px; font-size: 13px; font-weight: bold; color: #555; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid rgba(255,255,255,0.8); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
         .counter-red { color: #ea4335; font-size: 16px; }
 
         @keyframes attentionJump { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } 50% { transform: translateY(0); } 70% { transform: translateY(-5px); } }
         .attention-jump { animation: attentionJump 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         /* 主体交互区 */
         .main-interaction-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 5; padding-bottom: 10px; }
@@ -64,15 +72,18 @@
         .cell { aspect-ratio: 82 / 116; border-radius: 2px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; background: transparent; transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center center; }
 =======
         /* 主体交互区 (使用 flex:1 自动撑开并居中) */
+=======
+        /* 主体交互区 */
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
         .main-interaction-area { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 5; padding-bottom: 10px; }
         
-        /* 大楼背景容器 (增加了紫色背景和内边距) */
         .board-wrapper { width: 84%; max-width: 340px; background-color: #3b2854; border: 2px solid #2d1835; border-radius: 8px 8px 0 0; border-top: 4px solid #5c3a82; padding: 12px 10px; position: relative; box-shadow: 0 -10px 30px rgba(0,0,0,0.3); margin-bottom: 25px; }
 
         #pixi-canvas-container { position: absolute; top: 12px; left: 10px; right: 10px; bottom: 12px; pointer-events: none; z-index: 1; }
         
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; position: relative; z-index: 2; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; position: relative; z-index: 2; touch-action: none; }
         
+<<<<<<< HEAD
         .cell { aspect-ratio: 82 / 116; border-radius: 2px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; background: transparent; transition: transform 0.1s; }
         .cell:active { transform: scale(0.92); }
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
@@ -80,14 +91,24 @@
         @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
 <<<<<<< HEAD
+=======
+        /* 窗户缩放动画优化：配合底层的PIXI动画 */
+        .cell { aspect-ratio: 82 / 116; border-radius: 2px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; background: transparent; transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center center; }
+
+        @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
         /* 全新纯白/纯红 X 标记 */
         .mark-x { color: #ffffff; font-weight: 900; font-family: sans-serif; font-size: 30px; opacity: 1; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 8px rgba(255,255,255,0.7), 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
         
         .mark-error { color: #ff0000; font-weight: 900; font-family: sans-serif; font-size: 38px; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-shadow: 0 0 15px rgba(255,0,0,0.8), 0 2px 4px rgba(0,0,0,0.8); }
+<<<<<<< HEAD
 =======
         .mark-x { color: #fff; font-weight: bold; font-family: sans-serif; font-size: 28px; opacity: 0.8; animation: popIn 0.2s ease-out; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
         .mark-error { color: #ea4335; font-weight: bold; font-family: sans-serif; font-size: 34px; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s ease-out; pointer-events: none; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
 
         .confetti-particle { position: absolute; width: 8px; height: 16px; border-radius: 2px; z-index: 50; pointer-events: none; animation: blast 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
         @keyframes blast { 0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.6) rotate(var(--rot)); opacity: 0; } }
@@ -99,6 +120,7 @@
         .guide-item span { color: #ebd160; font-weight: bold; margin-top: 2px; }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         @media (max-height: 700px) {
             .top-ui { padding-top: 10px; }
             .rules-wrapper { margin-bottom: 22px; }
@@ -109,15 +131,22 @@
             .mark-error { font-size: 30px; }
 =======
         /* ========= 小屏幕完美适配 (iPhone SE / 高度低于 700px 的设备) ========= */
+=======
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
         @media (max-height: 700px) {
             .top-ui { padding-top: 10px; }
             .rules-wrapper { margin-bottom: 22px; }
-            .board-wrapper { width: 78%; padding: 8px; margin-bottom: 15px; } /* 缩小大楼宽度，让窗户也跟着按比例缩小 */
-            .grid { gap: 4px; } /* 缩小窗户间距 */
+            .board-wrapper { width: 78%; padding: 8px; margin-bottom: 15px; } 
+            .grid { gap: 4px; } 
             #pixi-canvas-container { top: 8px; left: 8px; right: 8px; bottom: 8px; }
+<<<<<<< HEAD
             .mark-x { font-size: 22px; }
             .mark-error { font-size: 26px; }
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+            .mark-x { font-size: 24px; }
+            .mark-error { font-size: 30px; }
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
             .guide-box { width: 38px; height: 38px; font-size: 16px; }
             .controls-guide { transform: scale(0.95); margin-bottom: 5px; }
         }
@@ -153,34 +182,43 @@
             <div class="rule-item">罪犯不能相<br>邻躲藏</div>
         </div>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         <!-- 胶囊直接挂在规则面板上 -->
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
         <div class="counter-pill">
             🦹 剩余罪犯: <span class="counter-red" id="thief-counter">5</span>
         </div>
     </div>
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     <!-- 中部交互区 -->
 =======
     <!-- 中部网格与操作区 -->
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+    <!-- 中部交互区 -->
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
     <div class="main-interaction-area">
-        <!-- 大楼背景 -->
         <div class="board-wrapper">
             <div id="pixi-canvas-container"></div>
             <!-- 网格层 -->
             <div class="grid" id="grid"></div>
         </div>
 
-        <!-- 底部提示 -->
         <div class="controls-guide">
+<<<<<<< HEAD
 <<<<<<< HEAD
             <div class="guide-item"><div class="guide-box">👆</div><div>点击/滑动</div><span>排查 ✖</span></div>
 =======
             <div class="guide-item"><div class="guide-box">👆</div><div>单击排查</div><span>标记 ✖</span></div>
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+            <div class="guide-item"><div class="guide-box">👆</div><div>点击/滑动</div><span>排查 ✖</span></div>
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
             <div class="guide-item"><div class="guide-box">✌️</div><div>双击破门</div><span>抓捕 🦹</span></div>
         </div>
     </div>
@@ -413,12 +451,16 @@
             .load((loader, resources) => {
                 if (resources.windowSpine.error || resources.peopleSpine.error) {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     console.error("加载错误"); loadLevel(0); return;
 =======
                     console.error("加载错误，启动后备模式");
                     loadLevel(0); 
                     return;
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+                    console.error("加载错误"); loadLevel(0); return;
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
                 }
                 const windowData = resources.windowSpine.spineData;
                 const peopleData = resources.peopleSpine.spineData;
@@ -473,10 +515,14 @@
     // ================= 游戏主逻辑 =================
     function loadLevel(index) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         if (index >= levelData.length) index = 0; 
 =======
         if (index >= levelData.length) index = 0; // 循环关卡
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+        if (index >= levelData.length) index = 0; 
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
 
         document.getElementById('victory-screen').style.display = 'none';
         currentLevel = levelData[index];
@@ -504,6 +550,7 @@
                 const cell = document.createElement('div');
                 cell.className = `cell`;
 <<<<<<< HEAD
+<<<<<<< HEAD
                 cell.dataset.r = r;
                 cell.dataset.c = c;
 =======
@@ -511,6 +558,10 @@
                 cell.onmousedown = (e) => { e.preventDefault(); handleCellInteraction(r, c); };
                 cell.ontouchstart = (e) => { e.preventDefault(); handleCellInteraction(r, c); };
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
                 gridEl.appendChild(cell);
 
                 const spineIndex = r * 6 + c;
@@ -541,6 +592,7 @@
         updateBoardView();
     }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     function handleCellInteraction(r, c) {
@@ -580,6 +632,8 @@
     }
 
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
     function executeDoubleTapAction(r, c) {
         const wSpine = windowInstances[r * 6 + c];
         const pSpine = peopleInstances[r * 6 + c];
@@ -602,10 +656,14 @@
 
         } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
             playerState[r][c] = 4; // 状态4：动画播放锁定
 =======
             playerState[r][c] = 4; // 状态 4: 锁定播放动画中
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+            playerState[r][c] = 4; // 状态4：动画播放锁定
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
             updateBoardView(); 
 
             let openDur = getAnimDuration(wSpine, 'open');
@@ -624,6 +682,7 @@
             setTimeout(() => {
                 if (pSpine) pSpine.visible = false; 
 <<<<<<< HEAD
+<<<<<<< HEAD
                 playerState[r][c] = 3; // 变成红色错误叉
                 updateBoardView();
                 loseLife(); 
@@ -632,6 +691,11 @@
                 updateBoardView();
                 loseLife(); // 扣除红心
 >>>>>>> dbe7c4f06020a92333555c7a97f7a0677020cb55
+=======
+                playerState[r][c] = 3; // 变成红色错误叉
+                updateBoardView();
+                loseLife(); 
+>>>>>>> c2ac9e024fb7cf555de665970e30e182fd4150a9
             }, totalAnimDuration);
         }
     }
