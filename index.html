@@ -14,7 +14,6 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, "Segoe UI", sans-serif; }
 
-        /* 阻止全局的默认手势操作，防止滑动时页面跟着跑 */
         body { background-color: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; touch-action: none; overscroll-behavior: none; }
 
         #app { 
@@ -51,17 +50,16 @@
 
         #pixi-canvas-container { position: absolute; top: 12px; left: 10px; right: 10px; bottom: 12px; pointer-events: none; z-index: 1; }
         
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; position: relative; z-index: 2; touch-action: none; }
+        /* 移除写死的网格列数，交由 JS 动态生成 */
+        .grid { display: grid; position: relative; z-index: 2; touch-action: none; }
         
-        /* 窗户缩放动画优化：配合底层的PIXI动画 */
         .cell { aspect-ratio: 82 / 116; border-radius: 2px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; background: transparent; transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center center; }
 
         @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* 核心修复：使用了更安全的乘号字符，并增大了字号以保持视觉冲击力 */
-        .mark-x { color: #ffffff; font-weight: 900; font-family: sans-serif; font-size: 50px; line-height: 1; opacity: 1; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
+        .mark-x { color: #ffffff; font-weight: 900; font-family: sans-serif; line-height: 1; opacity: 1; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
         
-        .mark-error { color: #ff0000; font-weight: 900; font-family: sans-serif; font-size: 60px; line-height: 1; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-shadow: 0 0 15px rgba(255,0,0,0.8), 0 2px 4px rgba(0,0,0,0.8); }
+        .mark-error { color: #ff0000; font-weight: 900; font-family: sans-serif; line-height: 1; background: transparent; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-shadow: 0 0 15px rgba(255,0,0,0.8), 0 2px 4px rgba(0,0,0,0.8); }
 
         .confetti-particle { position: absolute; width: 8px; height: 16px; border-radius: 2px; z-index: 50; pointer-events: none; animation: blast 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
         @keyframes blast { 0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.6) rotate(var(--rot)); opacity: 0; } }
@@ -76,10 +74,7 @@
             .top-ui { padding-top: 10px; }
             .rules-wrapper { margin-bottom: 22px; }
             .board-wrapper { width: 78%; padding: 8px; margin-bottom: 15px; } 
-            .grid { gap: 4px; } 
             #pixi-canvas-container { top: 8px; left: 8px; right: 8px; bottom: 8px; }
-            .mark-x { font-size: 40px; }
-            .mark-error { font-size: 50px; }
             .guide-box { width: 38px; height: 38px; font-size: 16px; }
             .controls-guide { transform: scale(0.95); margin-bottom: 5px; }
         }
@@ -150,12 +145,22 @@
 
     const levelData =[
         { title: "第1街区", regions: [[1,1,2,3,3,3],[1,1,2,2,3,3],[1,1,2,2,3,3],[1,1,4,3,3,3],[5,5,5,5,5,3],[6,5,5,5,5,5]], solution: [[0,1,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0]], initialThief: {r:3, c:2} },
-        { title: "第2街区", regions: [[1,1,1,2,2,2],[3,1,1,2,2,5],[3,3,4,4,2,5],[3,4,4,4,5,5],[6,6,6,4,5,5],[6,6,6,6,6,5]], solution: [[0,1,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0]], initialThief: {r:2, c:0} },
-        { title: "第3街区", regions: [[2,2,2,1,1,1],[2,2,2,3,3,1],[4,2,3,3,3,1],[4,4,5,3,3,1],[4,6,5,5,5,5],[6,6,6,6,5,5]], solution: [[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0],[0,1,0,0,0,0],[0,0,0,1,0,0],[1,0,0,0,0,0]], initialThief: {r:4, c:3} }
+        { title: "第2街区", regions: [[1,3,3,2,2,2],[3,3,2,2,2,2],[3,3,3,2,2,2],[3,3,4,4,4,4],[6,6,6,4,4,5],[6,6,6,6,4,4]],solution: [[1,0,0,0,0,0],[0,0,0,0,1,0],[0,1,0,0,0,0],[0,0,0,1,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0]],initialThief: {r: 5, c: 2}},
+        { title: "第3街区", regions: [[3,1,1,1,5,5],[3,3,3,2,5,5],[3,3,3,5,5,5],[3,3,5,5,4,5],[5,5,5,5,5,5],[5,5,5,5,5,6]], solution: [[0,1,0,0,0,0],[0,0,0,1,0,0],[1,0,0,0,0,0],[0,0,0,0,1,0],[0,0,1,0,0,0],[0,0,0,0,0,1]],initialThief: {r: 5, c: 5}},   
+        { title: "第4街区", regions: [[2,1,1,3,3,3],[2,2,3,3,3,3],[2,2,3,3,3,3],[2,4,3,3,3,3],[6,6,6,3,3,5],[6,6,6,6,5,5]],solution: [[0,0,1,0,0,0],[1,0,0,0,0,0],[0,0,0,0,1,0],[0,1,0,0,0,0],[0,0,0,0,0,1],[0,0,0,1,0,0]],initialThief: {r: 5, c: 3}},
+        { title: "第5街区",regions: [[1,2,2,2,2,2],[2,2,2,2,3,3],[5,5,5,4,3,3],[5,5,5,4,4,3],[5,5,5,4,3,3],[5,5,5,5,6,3]], solution: [[1,0,0,0,0,0],[0,0,1,0,0,0],[0,0,0,0,0,1],[0,0,0,1,0,0],[0,1,0,0,0,0],[0,0,0,0,1,0]],initialThief: {r: 5, c: 4}},
+        { title: "大厦突袭 (8x8)",regions: [[1,1,1,1,1,1,2,2],[1,1,1,1,3,2,2,2],[7,5,5,5,3,5,2,2],[7,4,5,5,5,5,5,5],[7,7,5,5,5,5,5,5],[7,7,6,5,5,5,5,5],[7,7,7,5,5,5,5,5],[7,7,7,7,5,5,5,8]],solution: [[0,0,0,1,0,0,0,0],[0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0],[0,1,0,0,0,0,0,0],[0,0,0,0,0,1,0,0],[0,0,1,0,0,0,0,0],[1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,1]],initialThief: {r: 7, c: 7}},
+        { title: "第7街区",regions: [[1,3,3,2,5,5],[3,3,3,2,5,5],[3,3,3,3,5,5],[3,3,5,5,5,4],[5,5,5,5,5,5],[5,5,5,5,6,5]], solution: [[1,0,0,0,0,0],[0,0,0,1,0,0],[0,1,0,0,0,0],[0,0,0,0,0,1],[0,0,1,0,0,0],[0,0,0,0,1,0]],initialThief: {r: 5, c: 4}},
+        { title: "8街区疑云", regions: [[4,1,1,1,1,3],[4,2,4,1,3,3],[4,4,4,3,3,3],[4,4,4,4,3,3],[6,4,4,4,4,5],[6,6,4,4,4,4]], solution: [[0,0,0,1,0,0],[0,1,0,0,0,0],[0,0,0,0,1,0],[0,0,1,0,0,0],[0,0,0,0,0,1],[1,0,0,0,0,0]], initialThief: {r: 5, c: 0}},
+        {title: "9街区疑云",  regions: [[1,2,2,2,3,3],[2,2,2,2,3,3],[2,2,2,3,3,3],[5,2,2,4,3,3],[5,5,5,4,6,3],[5,5,5,6,6,6]], solution: [[1,0,0,0,0,0],[0,0,1,0,0,0],[0,0,0,0,0,1],[0,0,0,1,0,0],[0,1,0,0,0,0],[0,0,0,0,1,0]],initialThief: {r: 5, c: 4}},
+        {title: "6街区疑云",regions: [[2,2,2,1,1,1],[2,2,2,2,1,1],[2,2,2,2,3,1],[5,2,4,4,1,1],[5,5,4,6,1,1],[5,5,6,6,6,1]], solution: [[0,0,0,0,0,1],[0,1,0,0,0,0],[0,0,0,0,1,0],[0,0,1,0,0,0],[1,0,0,0,0,0],[0,0,0,1,0,0]],initialThief: {r: 5, c: 3}},
+        { title: "10街区疑云", regions: [[3,3,3,1,1,1,8,8,8,8],[3,3,3,1,1,2,8,8,8,8],[3,3,3,3,8,8,8,8,8,8],[3,3,4,3,8,8,8,8,8,8],[3,3,5,5,5,8,8,8,8,8],[6,6,6,8,8,8,8,8,8,8],[6,6,8,8,8,8,8,8,7,9],[6,8,8,8,8,8,8,8,8,9],[8,8,8,8,8,8,8,8,9,9],[8,8,8,8,8,8,8,10,9,9]], solution: [[0,0,0,1,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0],[1,0,0,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0],[0,1,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,1,0,0,0],[0,0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,1,0,0]], initialThief: {r: 9, c: 7}},
+        
     ];
 
     let currentLevelIndex = 0;
     let currentLevel;
+    let currentGridSize = 6; // 核心：新增动态尺寸记录
     let playerState;
     let lives;
     let thievesRemaining;
@@ -164,7 +169,6 @@
     let availableFailAnims =[];
     const gridEl = document.getElementById('grid');
 
-    // ================= Q弹缩放动效系统 (HTML与PIXI同步) =================
     function tweenSpineScale(spine, targetScale, durationMs) {
         if (!spine || !spine.baseScale || !pixiApp) return;
         let startScale = spine.scale.x;
@@ -189,7 +193,7 @@
     }
 
     function bounceCell(r, c) {
-        const index = r * 6 + c;
+        const index = r * currentGridSize + c;
         const cell = gridEl.children[index];
         const wSpine = windowInstances[index];
         const pSpine = peopleInstances[index];
@@ -210,7 +214,6 @@
         }, 120);
     }
 
-    // ================= 滑动涂色逻辑 =================
     let isDragging = false;
     let dragMode = null; 
     let hasDragged = false;
@@ -313,7 +316,6 @@
         }
     }
 
-    // ================= PIXI & Spine 系统 =================
     let pixiApp;
     let windowContainer, peopleContainer;
     let windowInstances =[];
@@ -350,19 +352,21 @@
             .add('peopleSpine', SPINE_CONFIG.peopleUrl)
             .load((loader, resources) => {
                 if (resources.windowSpine.error || resources.peopleSpine.error) {
-                    alert("⚠️ 严重错误：未找到动画文件！\n\n请确保你的 GitHub 仓库根目录下有：\n1. AN/window1/window1.json\n2. AN/people1/people1.json\n\n注意大小写必须完全匹配！");
-                    loadLevel(0); 
+                    alert("⚠️ 严重错误：未找到动画文件！");
                     return;
                 }
                 const windowData = resources.windowSpine.spineData;
                 const peopleData = resources.peopleSpine.spineData;
-                for (let i = 0; i < 36; i++) {
+                
+                // 【核心修改】扩容到最大 100 个实例，用于应对 10x10 的巨型关卡
+                for (let i = 0; i < 100; i++) {
                     const pSpine = new PIXI.spine.Spine(peopleData);
                     pSpine.visible = false; 
                     peopleInstances.push(pSpine);
                     peopleContainer.addChild(pSpine);
 
                     const wSpine = new PIXI.spine.Spine(windowData);
+                    wSpine.visible = false; 
                     windowInstances.push(wSpine);
                     windowContainer.addChild(wSpine);
                 }
@@ -381,9 +385,12 @@
         const container = document.getElementById('pixi-canvas-container');
         const containerRect = container.getBoundingClientRect();
         const cells = gridEl.children;
-        if (cells.length < 36) return;
+        
+        const totalCells = currentGridSize * currentGridSize;
+        if (cells.length < totalCells) return; 
 
-        for (let i = 0; i < 36; i++) {
+        // 动态适配当前网格大小进行排版
+        for (let i = 0; i < totalCells; i++) {
             const cell = cells[i];
             const wSpine = windowInstances[i];
             const pSpine = peopleInstances[i];
@@ -393,6 +400,7 @@
             const x = cellRect.left - containerRect.left;
             const y = cellRect.top - containerRect.top;
             
+            // 魔法在这里：通过识别压缩后的外框尺寸，反向压缩 Spine的缩放率！
             const targetScale = cellRect.width / SPINE_CONFIG.baseWidth;
             wSpine.baseScale = targetScale;
             
@@ -409,12 +417,17 @@
 
         document.getElementById('victory-screen').style.display = 'none';
         currentLevel = levelData[index];
+        
+        // 【核心修改】动态获取当前关卡的网格尺寸
+        currentGridSize = currentLevel.solution.length;
+        
         document.getElementById('level-display').innerText = currentLevel.title;
         
         lives = 3;
         document.querySelectorAll('.heart').forEach(h => h.style.opacity = '1');
 
-        thievesRemaining = 5; 
+        // 每多一圈，多1个嫌疑人。总嫌犯 = 尺寸 (因为 initialThief 会提示1个，所以需要找 尺寸-1 个)
+        thievesRemaining = currentGridSize - 1; 
         document.getElementById('thief-counter').innerText = thievesRemaining;
 
         const rulesPanel = document.getElementById('rules-panel');
@@ -424,28 +437,45 @@
 
         availableFailAnims =['people1', 'people2', 'people3', 'people4'].sort(() => Math.random() - 0.5);
 
-        playerState = Array(6).fill().map(() => Array(6).fill(0));
+        playerState = Array(currentGridSize).fill().map(() => Array(currentGridSize).fill(0));
         playerState[currentLevel.initialThief.r][currentLevel.initialThief.c] = 2;
 
+        // 【核心修改】用 JS 强制控制 CSS 的列数和间距
+        gridEl.style.gridTemplateColumns = `repeat(${currentGridSize}, 1fr)`;
+        // 格子越多，缝隙越小，保证整体外观不超界
+        gridEl.style.gap = currentGridSize > 8 ? '2px' : (currentGridSize > 6 ? '4px' : '6px');
+
+        // 统一隐藏所有的Spine（以免上一个是8x8，下一个是6x6，留有残影）
+        for(let i=0; i<100; i++) {
+            if(windowInstances[i]) windowInstances[i].visible = false;
+            if(peopleInstances[i]) peopleInstances[i].visible = false;
+        }
+
         gridEl.innerHTML = '';
-        for (let r = 0; r < 6; r++) {
-            for (let c = 0; c < 6; c++) {
+        for (let r = 0; r < currentGridSize; r++) {
+            for (let c = 0; c < currentGridSize; c++) {
                 const cell = document.createElement('div');
                 cell.className = `cell`;
                 cell.dataset.r = r;
                 cell.dataset.c = c;
                 gridEl.appendChild(cell);
 
-                const spineIndex = r * 6 + c;
+                const spineIndex = r * currentGridSize + c;
                 const wSpine = windowInstances[spineIndex];
                 const pSpine = peopleInstances[spineIndex];
 
                 if (wSpine && pSpine) {
-                    const skinColor = currentLevel.regions[r][c]; 
+                    wSpine.visible = true; // 启用当前格子的动画实例
+                    let skinColor = currentLevel.regions[r][c]; 
+                    
                     try {
                         wSpine.skeleton.setSkinByName(`window${skinColor}`);
                         wSpine.skeleton.setSlotsToSetupPose();
-                    } catch (e) { }
+                    } catch (e) { 
+                        // 【防崩保护】如果 AI 生成的颜色是 7、8，但 Spine 里只有 1~6的皮肤，自动用取余的皮肤填补
+                        let safeSkin = (skinColor % 6) || 6;
+                        try { wSpine.skeleton.setSkinByName(`window${safeSkin}`); wSpine.skeleton.setSlotsToSetupPose(); } catch(err){}
+                    }
                     
                     if (playerState[r][c] === 2) {
                         pSpine.visible = true;
@@ -465,8 +495,9 @@
     }
 
     function executeDoubleTapAction(r, c) {
-        const wSpine = windowInstances[r * 6 + c];
-        const pSpine = peopleInstances[r * 6 + c];
+        const index = r * currentGridSize + c;
+        const wSpine = windowInstances[index];
+        const pSpine = peopleInstances[index];
 
         if (currentLevel.solution[r][c] === 1) {
             playerState[r][c] = 2; 
@@ -479,7 +510,7 @@
                 safePlaySpine(pSpine, 0, 'people0', false, -1);
             }
 
-            const cellElement = gridEl.children[r * 6 + c];
+            const cellElement = gridEl.children[index];
             shootConfetti(cellElement);
             updateBoardView();
             checkWin();
@@ -512,11 +543,16 @@
 
     function updateBoardView() {
         const cells = gridEl.children;
+        const totalCells = currentGridSize * currentGridSize;
         if(cells.length === 0) return;
 
-        for (let i = 0; i < 36; i++) {
-            const r = Math.floor(i / 6);
-            const c = i % 6;
+        // 根据格子数量动态调节叉号字体大小
+        let xSize = currentGridSize >= 8 ? 32 : 50;
+        let errSize = currentGridSize >= 8 ? 40 : 60;
+
+        for (let i = 0; i < totalCells; i++) {
+            const r = Math.floor(i / currentGridSize);
+            const c = i % currentGridSize;
             const state = playerState[r][c];
             const cell = cells[i];
             
@@ -524,11 +560,10 @@
                 cell.dataset.state = state;
                 cell.innerHTML = '';
                 
-                // 【核心修复】：将特殊符号 ✖ 替换为标准的纯文字数学乘号 ×
                 if (state === 1) {
-                    cell.innerHTML = '<span class="mark-x">×</span>';
+                    cell.innerHTML = `<span class="mark-x" style="font-size: ${xSize}px;">×</span>`;
                 } else if (state === 3) {
-                    cell.innerHTML = '<span class="mark-error">×</span>';
+                    cell.innerHTML = `<span class="mark-error" style="font-size: ${errSize}px;">×</span>`;
                 }
             }
         }
