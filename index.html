@@ -13,7 +13,6 @@
     <script src="./levels.js"></script> 
 
     <style>
-        /* 【核心修复】：加入了 -webkit-tap-highlight-color 彻底干掉双击蓝框 */
         * { 
             box-sizing: border-box; 
             margin: 0; 
@@ -186,6 +185,9 @@
 </div>
 
 <script>
+    // 【核心补丁 1】：引入全局的“关卡版本号”，解决回调污染炸弹
+    let currentSessionId = 0;
+
     window.addEventListener('error', function(event) {
         if (event.message && event.message.includes('Region not found')) {
             alert(`⚠️ 动画加载警告！\n检测到设计师导出的动画缺失了贴图: \n${event.message}\n\n游戏已为你强行跳过损坏的动画继续运行。`);
@@ -504,6 +506,10 @@
     }
 
     function loadLevel(index) {
+        // 【核心补丁 2】：每次加载新关卡，都会生成一个新版本号
+        currentSessionId++;
+        const currentSession = currentSessionId; 
+
         if (index >= levelData.length) index = 0; 
         document.getElementById('victory-screen').style.display = 'none';
 
@@ -532,12 +538,15 @@
         }
 
         setTimeout(() => {
+            // 如果玩家快速导致了重置，版本号已过期，阻断执行
+            if (currentSession !== currentSessionId) return;
+
             buildingLayer.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
             buildingLayer.style.transform = 'translateY(0)';
 
-            setTimeout(() => document.querySelectorAll('.anim-group-1').forEach(el => el.classList.add('show')), 0);
-            setTimeout(() => document.querySelectorAll('.anim-group-2').forEach(el => el.classList.add('show')), 200);
-            setTimeout(() => document.querySelectorAll('.anim-group-3').forEach(el => el.classList.add('show')), 400);
+            setTimeout(() => { if (currentSession === currentSessionId) document.querySelectorAll('.anim-group-1').forEach(el => el.classList.add('show')); }, 0);
+            setTimeout(() => { if (currentSession === currentSessionId) document.querySelectorAll('.anim-group-2').forEach(el => el.classList.add('show')); }, 200);
+            setTimeout(() => { if (currentSession === currentSessionId) document.querySelectorAll('.anim-group-3').forEach(el => el.classList.add('show')); }, 400);
 
         }, slideDelay);
 
@@ -566,7 +575,6 @@
         void rulesPanel.offsetWidth; 
         rulesPanel.classList.add('attention-jump');
 
-        // 【核心修改】：扩容了失败动画池，加入了 people5 到 people10
         availableFailAnims =['people1', 'people2', 'people3', 'people4', 'people5', 'people6', 'people7', 'people8', 'people9', 'people10'].sort(() => Math.random() - 0.5);
 
         playerState = Array(currentGridSize).fill().map(() => Array(currentGridSize).fill(0));
@@ -643,6 +651,8 @@
         const wSpine = windowInstances[index];
         const pSpine = peopleInstances[index];
 
+        const currentSession = currentSessionId; // 记录发生点击时的版本号
+
         if (currentLevel.solution[r][c] === 1) {
             playerState[r][c] = 2; 
             thievesRemaining--;
@@ -683,6 +693,9 @@
 
             let totalAnimDuration = (openDur + endDur) * 1000;
             setTimeout(() => {
+                // 【核心补丁 3】：炸弹起爆前检查，如果已是新版本则强行销毁！
+                if (currentSession !== currentSessionId) return; 
+
                 if (pSpine) pSpine.visible = false; 
                 playerState[r][c] = 3; 
                 updateBoardView();
@@ -745,19 +758,25 @@
     }
 
     function loseLife() {
+        const currentSession = currentSessionId;
+
         lives--;
         const hearts = document.querySelectorAll('.heart');
         if (lives >= 0) hearts[lives].style.opacity = '0.2';
         if (lives === 0) setTimeout(() => {
+            if (currentSession !== currentSessionId) return; // 拦截旧版的弹窗和重置
             alert('目标逃脱！准备重新部署...');
             loadLevel(currentLevelIndex);
         }, 300);
     }
 
     function checkWin() {
+        const currentSession = currentSessionId;
+
         document.getElementById('thief-counter').innerText = thievesRemaining;
         if (thievesRemaining === 0 && lives > 0) {
             setTimeout(() => {
+                if (currentSession !== currentSessionId) return; // 拦截旧版的胜利
                 document.getElementById('victory-screen').style.display = 'flex';
                 totalCoins += 200;
                 document.getElementById('total-coins').innerText = totalCoins;
