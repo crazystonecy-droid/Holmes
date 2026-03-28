@@ -1,0 +1,48 @@
+
+CG1.png
+size: 1901, 1901
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+bg0
+  rotate: false
+  xy: 1, 173
+  size: 183, 183
+  orig: 183, 183
+  offset: 0, 0
+  index: -1
+图层 1
+  rotate: true
+  xy: 1505, 1154
+  size: 746, 383
+  orig: 750, 478
+  offset: 0, 0
+  index: -1
+图层 2
+  rotate: false
+  xy: 753, 378
+  size: 750, 497
+  orig: 750, 559
+  offset: 0, 0
+  index: -1
+图层 3
+  rotate: false
+  xy: 753, 877
+  size: 750, 1023
+  orig: 750, 1148
+  offset: 0, 0
+  index: -1
+组 5
+  rotate: false
+  xy: 1505, 757
+  size: 395, 395
+  orig: 395, 395
+  offset: 0, 0
+  index: -1
+背景 拷贝 2
+  rotate: false
+  xy: 1, 358
+  size: 750, 1542
+  orig: 750, 1542
+  offset: 0, 0
+  index: -1

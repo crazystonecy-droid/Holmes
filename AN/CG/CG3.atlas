@@ -1,0 +1,48 @@
+
+CG3.png
+size: 1847, 1847
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+bg0
+  rotate: false
+  xy: 753, 911
+  size: 183, 183
+  orig: 183, 183
+  offset: 0, 0
+  index: -1
+taiyang
+  rotate: false
+  xy: 943, 1
+  size: 439, 439
+  orig: 439, 439
+  offset: 0, 0
+  index: -1
+tu1
+  rotate: false
+  xy: 1, 706
+  size: 750, 1140
+  orig: 750, 1140
+  offset: 0, 0
+  index: -1
+tu2
+  rotate: true
+  xy: 943, 442
+  size: 652, 673
+  orig: 652, 673
+  offset: 0, 0
+  index: -1
+tu3
+  rotate: true
+  xy: 1, 86
+  size: 618, 940
+  orig: 618, 940
+  offset: 0, 0
+  index: -1
+tu4
+  rotate: true
+  xy: 753, 1096
+  size: 750, 836
+  orig: 750, 836
+  offset: 0, 0
+  index: -1

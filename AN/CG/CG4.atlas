@@ -1,0 +1,48 @@
+
+CG4.png
+size: 1447, 1447
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+bg0
+  rotate: false
+  xy: 1, 8
+  size: 183, 183
+  orig: 183, 183
+  offset: 0, 0
+  index: -1
+taiyang
+  rotate: false
+  xy: 1237, 675
+  size: 209, 209
+  orig: 209, 209
+  offset: 0, 0
+  index: -1
+tu1
+  rotate: false
+  xy: 1, 193
+  size: 750, 525
+  orig: 750, 525
+  offset: 0, 0
+  index: -1
+tu2
+  rotate: true
+  xy: 753, 134
+  size: 750, 482
+  orig: 750, 482
+  offset: 0, 0
+  index: -1
+tu3
+  rotate: false
+  xy: 640, 886
+  size: 750, 560
+  orig: 750, 560
+  offset: 0, 0
+  index: -1
+tu4
+  rotate: false
+  xy: 1, 720
+  size: 637, 726
+  orig: 637, 726
+  offset: 0, 0
+  index: -1
