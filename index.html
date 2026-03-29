@@ -7,10 +7,12 @@
     <meta name="google" content="notranslate">
     <title>夜城神探：午夜追凶</title>
     
-    <!-- 引入 PixiJS, pixi-spine 以及我们刚才抽离的独立配置文件 -->
+    <!-- 引入 PixiJS, pixi-spine -->
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@5.3.12/dist/pixi.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi-spine@2.1.14/dist/pixi-spine.js"></script>
-    <script src="./levels.js"></script> 
+    
+    <!-- 【缓存清理点 1】：引入 levels.js 时带上版本号参数 -->
+    <script src="./levels.js?v=1.0.1"></script> 
 
     <style>
         * { 
@@ -97,6 +99,8 @@
         .guide-box { width: 44px; height: 44px; background: rgba(30, 25, 34, 0.8); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; margin-bottom: 4px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.4);}
         .guide-item span { color: #ebd160; font-weight: bold; margin-top: 2px; }
 
+        .version-tag { position: absolute; bottom: 5px; right: 10px; color: rgba(255,255,255,0.3); font-size: 11px; z-index: 100; pointer-events: none; }
+
         @media (max-height: 700px) {
             .top-ui { padding-top: 10px; }
             .rules-wrapper { margin-bottom: 28px; }
@@ -120,7 +124,6 @@
 
     <!-- 楼房建筑与窗户网格层 -->
     <div id="building-layer">
-        <!-- 隐形的占位符：确保建筑被压在屏幕底部，完美贴合排版 -->
         <div class="top-ui" style="opacity: 0; pointer-events: none; visibility: hidden;">
             <div class="coin-pill">占位</div>
             <div><div class="level-title">占位</div><div class="hearts-container"><span class="heart">❤️</span></div></div>
@@ -143,25 +146,19 @@
         </div>
     </div>
 
-    <!-- 顶部的动画 UI 层（依次向下滑落） -->
+    <!-- 顶部的动画 UI 层 -->
     <div id="ui-layer">
         <div class="top-ui">
-            <!-- 第 1 组 -->
             <div class="coin-pill ui-anim anim-group-1">💵 <span id="total-coins">1400</span></div>
-            
-            <!-- 第 2 组 -->
             <div class="center-group ui-anim anim-group-2">
                 <div class="level-title" id="level-display">加载中...</div>
                 <div class="hearts-container" id="hearts-container">
                     <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
                 </div>
             </div>
-
-            <!-- 第 1 组 -->
             <div class="hint-btn ui-anim anim-group-1" onclick="alert('【高级探员推理指南】\n1. 找小方块：只占1个窗户的颜色区域必藏罪犯！\n2. 抽屉原理：如果某两行只剩下红蓝两种颜色，那么红蓝罪犯必在这两行，其它地方的红蓝窗户直接打×！\n\n【操作指南】\n按住屏幕滑动：批量排查\n双击窗户：破门抓捕')">💡 线索</div>
         </div>
 
-        <!-- 第 3 组 -->
         <div class="rules-wrapper ui-anim anim-group-3" id="rules-panel">
             <div class="rules-container">
                 <div class="rule-item">每种颜色<br><span class="rule-hl">1</span>名罪犯</div>
@@ -182,10 +179,21 @@
         <div class="coin-pill" style="font-size: 20px; padding: 10px 25px; background: rgba(0,0,0,0.8); border-width: 3px;">赏金入账 +200</div>
         <button class="v-btn" onclick="nextLevel()">前往下个街区</button>
     </div>
+
+    <!-- 左下角显示版本号 -->
+    <div class="version-tag" id="v-tag">v1.0.1</div>
 </div>
 
 <script>
-    // 【核心补丁 1】：引入全局的“关卡版本号”，解决回调污染炸弹
+    // ==========================================
+    // 【核心配置】：游戏版本号控制
+    // 每次你替换了图片、改了 Spine 动画、改了关卡
+    // 请把这里的数字往上加（比如 "1.0.2"），彻底清理浏览器缓存！
+    // ==========================================
+    const GAME_VERSION = "1.0.1";
+    document.getElementById('v-tag').innerText = "v" + GAME_VERSION;
+
+
     let currentSessionId = 0;
 
     window.addEventListener('error', function(event) {
@@ -399,6 +407,9 @@
 
         const loader = PIXI.Loader.shared;
         
+        // 【缓存清理点 2】：强制 PixiJS 请求所有文件时带上版本号
+        loader.defaultQueryString = 'v=' + GAME_VERSION;
+
         SPINE_CONFIG.cgUrls.forEach((url, index) => {
             loader.add(`cgSpine_${index}`, url);
         });
@@ -506,7 +517,6 @@
     }
 
     function loadLevel(index) {
-        // 【核心补丁 2】：每次加载新关卡，都会生成一个新版本号
         currentSessionId++;
         const currentSession = currentSessionId; 
 
@@ -538,7 +548,6 @@
         }
 
         setTimeout(() => {
-            // 如果玩家快速导致了重置，版本号已过期，阻断执行
             if (currentSession !== currentSessionId) return;
 
             buildingLayer.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
@@ -554,7 +563,10 @@
         currentLevel = levelData[index];
         
         const randomBgIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
-        const selectedBg = BACKGROUND_IMAGES[randomBgIndex];
+        
+        // 【缓存清理点 3】：背景图加载强制带上版本号
+        const selectedBg = BACKGROUND_IMAGES[randomBgIndex] + '?v=' + GAME_VERSION;
+        
         buildingLayer.style.background = `url('${selectedBg}') center bottom / 100% auto no-repeat transparent`;
 
         currentGridSize = currentLevel.solution.length;
@@ -651,7 +663,7 @@
         const wSpine = windowInstances[index];
         const pSpine = peopleInstances[index];
 
-        const currentSession = currentSessionId; // 记录发生点击时的版本号
+        const currentSession = currentSessionId; 
 
         if (currentLevel.solution[r][c] === 1) {
             playerState[r][c] = 2; 
@@ -693,7 +705,6 @@
 
             let totalAnimDuration = (openDur + endDur) * 1000;
             setTimeout(() => {
-                // 【核心补丁 3】：炸弹起爆前检查，如果已是新版本则强行销毁！
                 if (currentSession !== currentSessionId) return; 
 
                 if (pSpine) pSpine.visible = false; 
@@ -764,7 +775,7 @@
         const hearts = document.querySelectorAll('.heart');
         if (lives >= 0) hearts[lives].style.opacity = '0.2';
         if (lives === 0) setTimeout(() => {
-            if (currentSession !== currentSessionId) return; // 拦截旧版的弹窗和重置
+            if (currentSession !== currentSessionId) return; 
             alert('目标逃脱！准备重新部署...');
             loadLevel(currentLevelIndex);
         }, 300);
@@ -776,7 +787,7 @@
         document.getElementById('thief-counter').innerText = thievesRemaining;
         if (thievesRemaining === 0 && lives > 0) {
             setTimeout(() => {
-                if (currentSession !== currentSessionId) return; // 拦截旧版的胜利
+                if (currentSession !== currentSessionId) return; 
                 document.getElementById('victory-screen').style.display = 'flex';
                 totalCoins += 200;
                 document.getElementById('total-coins').innerText = totalCoins;
