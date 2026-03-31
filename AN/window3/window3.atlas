@@ -1,243 +1,250 @@
 
 window3.png
-size: 379, 379
+size: 396, 396
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
 border1
   rotate: true
-  xy: 310, 34
+  xy: 390, 329
   size: 66, 5
   orig: 66, 5
   offset: 0, 0
   index: -1
 box1
   rotate: false
-  xy: 1, 156
+  xy: 1, 173
+  size: 75, 104
+  orig: 82, 116
+  offset: 4, 4
+  index: -1
+box1_副本
+  rotate: false
+  xy: 85, 291
   size: 75, 104
   orig: 82, 116
   offset: 4, 4
   index: -1
 box2
   rotate: false
-  xy: 1, 262
+  xy: 1, 279
   size: 82, 116
   orig: 82, 116
   offset: 0, 0
   index: -1
 color1
   rotate: false
-  xy: 85, 291
+  xy: 1, 84
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color10
   rotate: false
-  xy: 1, 67
+  xy: 162, 308
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color2
   rotate: false
-  xy: 150, 291
+  xy: 227, 308
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color3
   rotate: false
-  xy: 215, 291
+  xy: 292, 308
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color4
-  rotate: false
-  xy: 280, 291
+  rotate: true
+  xy: 1, 19
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color5
-  rotate: true
-  xy: 1, 2
+  rotate: false
+  xy: 66, 84
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color6
-  rotate: false
-  xy: 66, 67
+  rotate: true
+  xy: 162, 243
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color7
   rotate: true
-  xy: 85, 226
+  xy: 251, 243
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color8
   rotate: true
-  xy: 174, 226
+  xy: 90, 19
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 color9
-  rotate: true
-  xy: 78, 161
+  rotate: false
+  xy: 78, 190
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 hei
   rotate: true
-  xy: 167, 161
+  xy: 143, 178
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 jinghao
   rotate: true
-  xy: 352, 266
+  xy: 357, 329
   size: 23, 22
   orig: 23, 22
   offset: 0, 0
   index: -1
 light1
-  rotate: false
-  xy: 131, 72
+  rotate: true
+  xy: 232, 178
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 light2
   rotate: false
-  xy: 196, 72
+  xy: 131, 89
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 light3
-  rotate: true
-  xy: 263, 226
+  rotate: false
+  xy: 196, 89
   size: 63, 87
   orig: 63, 87
   offset: 0, 0
   index: -1
 people0-0
-  rotate: true
-  xy: 90, 1
+  rotate: false
+  xy: 179, 39
   size: 64, 48
   orig: 64, 48
   offset: 0, 0
   index: -1
 people0-1
   rotate: false
-  xy: 140, 22
+  xy: 261, 67
   size: 64, 48
   orig: 64, 48
   offset: 0, 0
   index: -1
 people0-2
-  rotate: true
-  xy: 78, 156
+  rotate: false
+  xy: 322, 117
   size: 3, 6
   orig: 3, 6
   offset: 0, 0
   index: -1
 people1
   rotate: true
-  xy: 261, 39
+  xy: 321, 180
   size: 61, 47
   orig: 61, 47
   offset: 0, 0
   index: -1
 people1-1
   rotate: false
-  xy: 317, 176
+  xy: 327, 75
   size: 40, 48
   orig: 40, 48
   offset: 0, 0
   index: -1
 people1-2
-  rotate: false
-  xy: 261, 12
+  rotate: true
+  xy: 370, 186
   size: 26, 25
   orig: 26, 25
   offset: 0, 0
   index: -1
 people1-3
-  rotate: true
-  xy: 352, 238
+  rotate: false
+  xy: 179, 25
   size: 26, 12
   orig: 26, 12
   offset: 0, 0
   index: -1
 people1-4
   rotate: true
-  xy: 140, 1
+  xy: 357, 308
   size: 19, 33
   orig: 19, 33
   offset: 0, 0
   index: -1
 people2
   rotate: false
-  xy: 256, 165
+  xy: 261, 117
   size: 59, 59
   orig: 59, 59
   offset: 0, 0
   index: -1
 people3
   rotate: false
-  xy: 206, 17
+  xy: 322, 125
   size: 53, 53
   orig: 55, 53
   offset: 0, 0
   index: -1
 people3-1
   rotate: true
-  xy: 175, 4
+  xy: 69, 1
   size: 16, 25
   orig: 16, 25
   offset: 0, 0
   index: -1
 people3-2
   rotate: false
-  xy: 345, 306
+  xy: 370, 214
   size: 25, 29
   orig: 25, 29
   offset: 0, 0
   index: -1
 people3-3
   rotate: false
-  xy: 345, 291
+  xy: 78, 175
   size: 27, 13
   orig: 27, 15
   offset: 0, 0
   index: -1
 people4-1
   rotate: false
-  xy: 261, 102
+  xy: 340, 245
   size: 55, 61
   orig: 55, 64
   offset: 0, 0
   index: -1
 people4-2
   rotate: false
-  xy: 345, 337
+  xy: 357, 354
   size: 31, 41
   orig: 31, 41
   offset: 0, 0
   index: -1
 yinying
-  rotate: true
-  xy: 317, 34
+  rotate: false
+  xy: 1, 12
   size: 66, 5
   orig: 66, 5
   offset: 0, 0
