@@ -1,0 +1,62 @@
+
+fail.png
+size: 530, 530
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+egebo
+  rotate: true
+  xy: 1, 1
+  size: 133, 149
+  orig: 133, 149
+  offset: 0, 0
+  index: -1
+gebo
+  rotate: false
+  xy: 1, 353
+  size: 492, 176
+  orig: 492, 176
+  offset: 0, 0
+  index: -1
+tui
+  rotate: false
+  xy: 152, 40
+  size: 73, 94
+  orig: 73, 94
+  offset: 0, 0
+  index: -1
+tui1
+  rotate: false
+  xy: 445, 284
+  size: 10, 67
+  orig: 10, 67
+  offset: 0, 0
+  index: -1
+tui2
+  rotate: false
+  xy: 495, 454
+  size: 22, 75
+  orig: 22, 75
+  offset: 0, 0
+  index: -1
+yanj1
+  rotate: false
+  xy: 152, 22
+  size: 13, 16
+  orig: 13, 16
+  offset: 0, 0
+  index: -1
+yanj2
+  rotate: false
+  xy: 227, 120
+  size: 12, 14
+  orig: 12, 14
+  offset: 0, 0
+  index: -1
+yaz
+  rotate: true
+  xy: 1, 136
+  size: 215, 442
+  orig: 215, 442
+  offset: 0, 0
+  index: -1

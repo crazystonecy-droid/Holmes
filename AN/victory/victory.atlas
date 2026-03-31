@@ -1,0 +1,482 @@
+
+victory.png
+size: 2020, 2020
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+图层 23
+  rotate: false
+  xy: 591, 202
+  size: 202, 261
+  orig: 203, 261
+  offset: 0, 0
+  index: -1
+图层 24
+  rotate: true
+  xy: 932, 1612
+  size: 197, 278
+  orig: 197, 278
+  offset: 0, 0
+  index: -1
+图层 25
+  rotate: true
+  xy: 1212, 1418
+  size: 194, 280
+  orig: 194, 280
+  offset: 0, 0
+  index: -1
+图层 26
+  rotate: false
+  xy: 394, 613
+  size: 194, 269
+  orig: 194, 269
+  offset: 0, 0
+  index: -1
+图层 27
+  rotate: false
+  xy: 198, 604
+  size: 194, 278
+  orig: 194, 280
+  offset: 0, 2
+  index: -1
+图层 28
+  rotate: false
+  xy: 198, 324
+  size: 194, 278
+  orig: 194, 280
+  offset: 0, 2
+  index: -1
+图层 29
+  rotate: false
+  xy: 204, 1180
+  size: 194, 270
+  orig: 194, 273
+  offset: 0, 2
+  index: -1
+图层 30
+  rotate: false
+  xy: 1401, 749
+  size: 194, 260
+  orig: 194, 261
+  offset: 0, 1
+  index: -1
+图层 31
+  rotate: true
+  xy: 1193, 1222
+  size: 194, 261
+  orig: 194, 261
+  offset: 0, 0
+  index: -1
+图层 32
+  rotate: false
+  xy: 1, 880
+  size: 194, 286
+  orig: 194, 286
+  offset: 0, 0
+  index: -1
+图层 33
+  rotate: true
+  xy: 1491, 1825
+  size: 194, 286
+  orig: 194, 286
+  offset: 0, 0
+  index: -1
+图层 34
+  rotate: true
+  xy: 1494, 1432
+  size: 194, 282
+  orig: 194, 282
+  offset: 0, 0
+  index: -1
+图层 35
+  rotate: true
+  xy: 1494, 1236
+  size: 194, 282
+  orig: 194, 282
+  offset: 0, 0
+  index: -1
+图层 36
+  rotate: false
+  xy: 197, 884
+  size: 198, 282
+  orig: 198, 282
+  offset: 0, 0
+  index: -1
+图层 37
+  rotate: false
+  xy: 1, 1452
+  size: 206, 283
+  orig: 206, 284
+  offset: 0, 1
+  index: -1
+图层 38
+  rotate: false
+  xy: 795, 206
+  size: 198, 259
+  orig: 198, 260
+  offset: 0, 0
+  index: -1
+图层 39
+  rotate: true
+  xy: 1309, 5
+  size: 204, 249
+  orig: 204, 250
+  offset: 0, 1
+  index: -1
+图层 40
+  rotate: false
+  xy: 1193, 493
+  size: 205, 257
+  orig: 205, 258
+  offset: 0, 1
+  index: -1
+图层 41
+  rotate: true
+  xy: 647, 1811
+  size: 208, 281
+  orig: 208, 281
+  offset: 0, 0
+  index: -1
+图层 42
+  rotate: false
+  xy: 400, 1192
+  size: 208, 264
+  orig: 208, 265
+  offset: 0, 1
+  index: -1
+图层 43
+  rotate: false
+  xy: 1779, 1749
+  size: 211, 270
+  orig: 212, 271
+  offset: 1, 1
+  index: -1
+图层 44
+  rotate: true
+  xy: 930, 1811
+  size: 208, 277
+  orig: 208, 279
+  offset: 0, 1
+  index: -1
+图层 45
+  rotate: true
+  xy: 1212, 1614
+  size: 200, 280
+  orig: 200, 280
+  offset: 0, 0
+  index: -1
+图层 46
+  rotate: false
+  xy: 1, 1168
+  size: 201, 282
+  orig: 201, 282
+  offset: 0, 0
+  index: -1
+图层 47
+  rotate: false
+  xy: 1, 1737
+  size: 212, 282
+  orig: 212, 282
+  offset: 0, 0
+  index: -1
+图层 48
+  rotate: true
+  xy: 884, 1404
+  size: 206, 271
+  orig: 206, 271
+  offset: 0, 0
+  index: -1
+图层 49
+  rotate: false
+  xy: 1779, 1476
+  size: 210, 271
+  orig: 210, 271
+  offset: 0, 0
+  index: -1
+图层 50
+  rotate: false
+  xy: 1778, 1202
+  size: 210, 272
+  orig: 210, 273
+  offset: 0, 1
+  index: -1
+图层 51
+  rotate: true
+  xy: 610, 1402
+  size: 210, 272
+  orig: 210, 273
+  offset: 0, 1
+  index: -1
+图层 52
+  rotate: false
+  xy: 1, 23
+  size: 195, 283
+  orig: 195, 284
+  offset: 0, 1
+  index: -1
+图层 53
+  rotate: true
+  xy: 647, 1614
+  size: 195, 283
+  orig: 195, 284
+  offset: 0, 1
+  index: -1
+图层 54
+  rotate: false
+  xy: 1, 594
+  size: 195, 284
+  orig: 195, 284
+  offset: 0, 0
+  index: -1
+图层 55
+  rotate: false
+  xy: 1, 308
+  size: 195, 284
+  orig: 195, 284
+  offset: 0, 0
+  index: -1
+图层 56
+  rotate: true
+  xy: 1494, 1628
+  size: 195, 283
+  orig: 195, 284
+  offset: 0, 1
+  index: -1
+图层 57
+  rotate: false
+  xy: 394, 343
+  size: 195, 268
+  orig: 195, 269
+  offset: 0, 1
+  index: -1
+图层 58
+  rotate: false
+  xy: 995, 206
+  size: 195, 259
+  orig: 195, 260
+  offset: 0, 1
+  index: -1
+图层 59
+  rotate: true
+  xy: 1052, 9
+  size: 195, 255
+  orig: 195, 256
+  offset: 0, 1
+  index: -1
+图层 60
+  rotate: false
+  xy: 394, 73
+  size: 195, 268
+  orig: 195, 268
+  offset: 0, 0
+  index: -1
+图层 61
+  rotate: true
+  xy: 884, 1207
+  size: 195, 268
+  orig: 195, 268
+  offset: 0, 0
+  index: -1
+图层 62
+  rotate: false
+  xy: 1400, 488
+  size: 194, 259
+  orig: 194, 259
+  offset: 0, 0
+  index: -1
+图层 63
+  rotate: true
+  xy: 1154, 1011
+  size: 209, 252
+  orig: 209, 252
+  offset: 0, 0
+  index: -1
+图层 64
+  rotate: true
+  xy: 1408, 1011
+  size: 209, 252
+  orig: 209, 252
+  offset: 0, 0
+  index: -1
+图层 65
+  rotate: false
+  xy: 590, 733
+  size: 209, 263
+  orig: 209, 264
+  offset: 0, 0
+  index: -1
+图层 66
+  rotate: false
+  xy: 1193, 752
+  size: 206, 257
+  orig: 206, 257
+  offset: 0, 0
+  index: -1
+图层 67
+  rotate: false
+  xy: 1388, 235
+  size: 206, 251
+  orig: 206, 252
+  offset: 0, 0
+  index: -1
+图层 68
+  rotate: false
+  xy: 1597, 753
+  size: 206, 251
+  orig: 206, 252
+  offset: 0, 0
+  index: -1
+图层 69
+  rotate: false
+  xy: 801, 730
+  size: 194, 266
+  orig: 194, 266
+  offset: 0, 0
+  index: -1
+图层 70
+  rotate: true
+  xy: 1662, 1006
+  size: 194, 258
+  orig: 194, 258
+  offset: 0, 0
+  index: -1
+图层 71
+  rotate: false
+  xy: 1792, 306
+  size: 194, 249
+  orig: 194, 249
+  offset: 0, 0
+  index: -1
+图层 72
+  rotate: false
+  xy: 1805, 753
+  size: 194, 251
+  orig: 194, 252
+  offset: 0, 0
+  index: -1
+图层 73
+  rotate: false
+  xy: 997, 476
+  size: 194, 265
+  orig: 194, 266
+  offset: 0, 0
+  index: -1
+图层 74
+  rotate: false
+  xy: 1192, 211
+  size: 194, 263
+  orig: 194, 264
+  offset: 0, 0
+  index: -1
+图层 75
+  rotate: false
+  xy: 1596, 304
+  size: 194, 251
+  orig: 194, 251
+  offset: 0, 0
+  index: -1
+图层 76
+  rotate: false
+  xy: 997, 743
+  size: 194, 266
+  orig: 194, 267
+  offset: 0, 0
+  index: -1
+图层 77
+  rotate: false
+  xy: 198, 44
+  size: 194, 278
+  orig: 194, 278
+  offset: 0, 0
+  index: -1
+图层 78
+  rotate: false
+  xy: 209, 1458
+  size: 194, 277
+  orig: 194, 278
+  offset: 0, 1
+  index: -1
+图层 79
+  rotate: false
+  xy: 209, 1458
+  size: 194, 277
+  orig: 194, 278
+  offset: 0, 1
+  index: -1
+图层 80
+  rotate: true
+  xy: 610, 998
+  size: 194, 267
+  orig: 194, 267
+  offset: 0, 0
+  index: -1
+图层 81
+  rotate: true
+  xy: 1597, 557
+  size: 194, 256
+  orig: 194, 257
+  offset: 0, 0
+  index: -1
+图层 82
+  rotate: true
+  xy: 1209, 1816
+  size: 203, 280
+  orig: 203, 280
+  offset: 0, 0
+  index: -1
+图层 83
+  rotate: false
+  xy: 405, 1462
+  size: 203, 275
+  orig: 203, 275
+  offset: 0, 0
+  index: -1
+图层 84
+  rotate: true
+  xy: 881, 1011
+  size: 194, 268
+  orig: 195, 270
+  offset: 0, 2
+  index: -1
+图层 85
+  rotate: false
+  xy: 591, 465
+  size: 199, 266
+  orig: 199, 267
+  offset: 0, 0
+  index: -1
+图层 86
+  rotate: false
+  xy: 215, 1739
+  size: 214, 280
+  orig: 214, 280
+  offset: 0, 0
+  index: -1
+图层 87
+  rotate: false
+  xy: 431, 1741
+  size: 214, 278
+  orig: 214, 278
+  offset: 0, 0
+  index: -1
+图层 88
+  rotate: true
+  xy: 610, 1194
+  size: 206, 269
+  orig: 206, 269
+  offset: 0, 0
+  index: -1
+图层 89
+  rotate: true
+  xy: 795, 1
+  size: 203, 255
+  orig: 203, 256
+  offset: 0, 0
+  index: -1
+图层 90
+  rotate: false
+  xy: 792, 467
+  size: 203, 261
+  orig: 203, 261
+  offset: 0, 0
+  index: -1
