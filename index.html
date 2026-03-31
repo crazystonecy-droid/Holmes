@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 屏蔽谷歌翻译插件的报错 -->
     <meta name="google" content="notranslate">
     <title>夜城神探：午夜追凶</title>
     
-    <!-- 引入 PixiJS, pixi-spine -->
     <script src="https://cdn.jsdelivr.net/npm/pixi.js@5.3.12/dist/pixi.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi-spine@2.1.14/dist/pixi-spine.js"></script>
     
-    <!-- 【缓存清理点 1】：引入 levels.js 时带上版本号参数 -->
-    <script src="./levels.js?v=1.0.1"></script> 
+    <!-- 引入外部关卡配置，带上版本号防缓存 -->
+    <script src="./levels.js?v=1.0.4"></script> 
 
     <style>
         * { 
@@ -43,10 +41,16 @@
             background: url('./img/bg1.png') center bottom / 100% auto no-repeat transparent;
         }
 
-        /* 顶部悬浮的动效 UI 层 */
+        /* 悬浮UI层 */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; pointer-events: none; 
+        }
+
+        /* 专用于播放胜利/失败等全屏特效动画的层 */
+        #spine-ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 101; pointer-events: none; 
         }
         
         .ui-anim {
@@ -110,20 +114,25 @@
             .controls-guide { transform: scale(0.95); margin-bottom: 5px; }
         }
 
-        #victory-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 25, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .victory-title { color: #74c2f2; font-size: 32px; font-weight: bold; margin-bottom: 15px; letter-spacing: 2px;}
-        .big-icon { font-size: 80px; margin-bottom: 25px; }
-        .v-btn { background: #ebd160; color: #2f2331; border: none; padding: 15px 45px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 30px; border-radius: 30px; box-shadow: 0 4px 15px rgba(235, 209, 96, 0.4);}
+        /* 结算界面通用样式 */
+        .end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 25, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .end-title { font-size: 36px; font-weight: bold; margin-bottom: 15px; letter-spacing: 2px;}
+        .big-icon { font-size: 80px; margin-bottom: 25px; } 
+        .v-btn { border: none; padding: 15px 45px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);}
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- CG 专属层 -->
+    <!-- 底层 CG 画布 -->
     <div id="cg-layer"></div>
+
+    <!-- 顶层 全屏特效画布 (胜利、失败动画专用) -->
+    <div id="spine-ui-layer"></div>
 
     <!-- 楼房建筑与窗户网格层 -->
     <div id="building-layer">
+        <!-- 排版占位 -->
         <div class="top-ui" style="opacity: 0; pointer-events: none; visibility: hidden;">
             <div class="coin-pill">占位</div>
             <div><div class="level-title">占位</div><div class="hearts-container"><span class="heart">❤️</span></div></div>
@@ -146,7 +155,7 @@
         </div>
     </div>
 
-    <!-- 顶部的动画 UI 层 -->
+    <!-- 动画 UI 层 -->
     <div id="ui-layer">
         <div class="top-ui">
             <div class="coin-pill ui-anim anim-group-1">💵 <span id="total-coins">1400</span></div>
@@ -173,32 +182,44 @@
         </div>
     </div>
 
-    <div id="victory-screen">
-        <div class="victory-title">街区已肃清</div>
-        <div class="big-icon">🕵️‍♂️</div>
-        <div class="coin-pill" style="font-size: 20px; padding: 10px 25px; background: rgba(0,0,0,0.8); border-width: 3px;">赏金入账 +200</div>
-        <button class="v-btn" onclick="nextLevel()">前往下个街区</button>
+    <!-- ==================== 胜利结算界面 ==================== -->
+    <div id="victory-screen" class="end-screen">
+        <div class="end-title" style="color: #74c2f2; transform: translateY(-100px);">抓捕成功</div>
+        
+        <div class="big-icon" style="visibility: hidden; margin: 0; height: 40px;">🕵️‍♂️</div>
+        
+        <div style="transform: translateY(100px); display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <div class="coin-pill" style="font-size: 20px; padding: 10px 25px; background: rgba(0,0,0,0.8); border-width: 3px;">赏金入账 +200</div>
+            <button class="v-btn" style="background: #ebd160; color: #2f2331;" onclick="nextLevel()">前往下个街区</button>
+        </div>
     </div>
 
-    <!-- 左下角显示版本号 -->
-    <div class="version-tag" id="v-tag">v1.0.1</div>
+    <!-- ==================== 失败结算界面 ==================== -->
+    <div id="fail-screen" class="end-screen">
+        <!-- 标题向上偏移 150px (在原先100px基础上再移50px) -->
+        <div class="end-title" style="color: #ea4335; transform: translateY(-150px);">抓捕失败</div>
+        
+        <div class="big-icon" style="visibility: hidden; margin: 0; height: 40px;">❌</div>
+        
+        <!-- 按钮向下偏移 200px (在原先100px基础上再移100px) -->
+        <button class="v-btn" style="background: #ea4335; color: #fff; transform: translateY(200px);" onclick="retryLevel()">重新开始</button>
+    </div>
+
+    <div class="version-tag" id="v-tag">v1.0.4</div>
 </div>
 
 <script>
     // ==========================================
-    // 【核心配置】：游戏版本号控制
-    // 每次你替换了图片、改了 Spine 动画、改了关卡
-    // 请把这里的数字往上加（比如 "1.0.2"），彻底清理浏览器缓存！
+    // 游戏版本号
     // ==========================================
-    const GAME_VERSION = "1.0.1";
+    const GAME_VERSION = "1.0.4";
     document.getElementById('v-tag').innerText = "v" + GAME_VERSION;
-
 
     let currentSessionId = 0;
 
     window.addEventListener('error', function(event) {
         if (event.message && event.message.includes('Region not found')) {
-            alert(`⚠️ 动画加载警告！\n检测到设计师导出的动画缺失了贴图: \n${event.message}\n\n游戏已为你强行跳过损坏的动画继续运行。`);
+            alert(`⚠️ 动画加载警告！\n检测到缺失贴图: \n${event.message}\n已强行跳过。`);
             document.getElementById('building-layer').style.transition = 'transform 0.5s ease-out';
             document.getElementById('building-layer').style.transform = 'translateY(0)';
             document.querySelectorAll('.ui-anim').forEach(el => el.classList.add('show'));
@@ -220,9 +241,7 @@
         if (!spine || !spine.baseScale || !pixiApp) return;
         let startScale = spine.scale.x;
         let startTime = performance.now();
-        
         if (spine.tweenTicker) pixiApp.ticker.remove(spine.tweenTicker);
-        
         spine.tweenTicker = () => {
             let now = performance.now();
             let progress = (now - startTime) / durationMs;
@@ -246,12 +265,10 @@
         const pSpine = peopleInstances[index];
         
         cell.style.transform = 'scale(0.85)';
-        
         if (wSpine && wSpine.baseScale) {
             tweenSpineScale(wSpine, wSpine.baseScale * 0.85, 100);
             if (pSpine) tweenSpineScale(pSpine, wSpine.baseScale * 0.85, 100);
         }
-
         setTimeout(() => {
             cell.style.transform = 'scale(1)';
             if (wSpine && wSpine.baseScale) {
@@ -346,26 +363,23 @@
         }
     }
 
-    function handlePointerUp(e) {
-        isDragging = false;
-    }
+    function handlePointerUp(e) { isDragging = false; }
 
     function paintCell(r, c, targetState) {
         let state = playerState[r][c];
         if (state === 2 || state === 4) return; 
-        
         if (targetState === 1 && state === 0) {
-            playerState[r][c] = 1;
-            updateBoardView();
+            playerState[r][c] = 1; updateBoardView();
         } else if (targetState === 0 && (state === 1 || state === 3)) {
-            playerState[r][c] = 0;
-            updateBoardView();
+            playerState[r][c] = 0; updateBoardView();
         }
     }
 
-    let cgApp;
+    let cgApp, uiApp;
     let cgInstances =[]; 
     let currentCgInstance = null; 
+    let victorySpineInstance = null;
+    let failSpineInstance = null;
     
     let pixiApp;
     let windowContainer, peopleContainer;
@@ -389,16 +403,17 @@
 
     function initPixiAndSpine() {
         const container = document.getElementById('pixi-canvas-container');
-        pixiApp = new PIXI.Application({
-            transparent: true, resizeTo: container, autoDensity: true, resolution: window.devicePixelRatio || 1,
-        });
+        pixiApp = new PIXI.Application({ transparent: true, resizeTo: container, autoDensity: true, resolution: window.devicePixelRatio || 1 });
         container.appendChild(pixiApp.view);
 
         const cgContainer = document.getElementById('cg-layer');
-        cgApp = new PIXI.Application({
-            transparent: true, resizeTo: cgContainer, autoDensity: true, resolution: window.devicePixelRatio || 1,
-        });
+        cgApp = new PIXI.Application({ transparent: true, resizeTo: cgContainer, autoDensity: true, resolution: window.devicePixelRatio || 1 });
         cgContainer.appendChild(cgApp.view);
+
+        // 初始化顶层特效画布
+        const uiContainer = document.getElementById('spine-ui-layer');
+        uiApp = new PIXI.Application({ transparent: true, resizeTo: uiContainer, autoDensity: true, resolution: window.devicePixelRatio || 1 });
+        uiContainer.appendChild(uiApp.view);
 
         peopleContainer = new PIXI.Container();
         windowContainer = new PIXI.Container();
@@ -406,18 +421,14 @@
         pixiApp.stage.addChild(windowContainer); 
 
         const loader = PIXI.Loader.shared;
-        
-        // 【缓存清理点 2】：强制 PixiJS 请求所有文件时带上版本号
         loader.defaultQueryString = 'v=' + GAME_VERSION;
 
-        SPINE_CONFIG.cgUrls.forEach((url, index) => {
-            loader.add(`cgSpine_${index}`, url);
-        });
-
-        SPINE_CONFIG.windowUrls.forEach((url, index) => {
-            loader.add(`windowSpine_${index}`, url);
-        });
+        SPINE_CONFIG.cgUrls.forEach((url, index) => { loader.add(`cgSpine_${index}`, url); });
+        SPINE_CONFIG.windowUrls.forEach((url, index) => { loader.add(`windowSpine_${index}`, url); });
         loader.add('peopleSpine', SPINE_CONFIG.peopleUrl);
+        
+        loader.add('victorySpine', './AN/victory/victory.json');
+        loader.add('failSpine', './AN/fail/fail.json');
 
         loader.load((loader, resources) => {
             SPINE_CONFIG.cgUrls.forEach((url, index) => {
@@ -429,8 +440,24 @@
                         cgApp.stage.addChild(cgSpine);
                         cgInstances.push(cgSpine);
                     }
-                } catch(e) { console.error(`第 ${index+1} 个 CG 动画加载失败:`, e); }
+                } catch(e) {}
             });
+
+            try {
+                if (resources.victorySpine && resources.victorySpine.spineData) {
+                    victorySpineInstance = new PIXI.spine.Spine(resources.victorySpine.spineData);
+                    victorySpineInstance.visible = false;
+                    uiApp.stage.addChild(victorySpineInstance);
+                }
+            } catch(e) { console.error("Victory动画加载失败", e); }
+            
+            try {
+                if (resources.failSpine && resources.failSpine.spineData) {
+                    failSpineInstance = new PIXI.spine.Spine(resources.failSpine.spineData);
+                    failSpineInstance.visible = false;
+                    uiApp.stage.addChild(failSpineInstance);
+                }
+            } catch(e) { console.error("Fail动画加载失败", e); }
 
             const peopleData = resources.peopleSpine && resources.peopleSpine.spineData;
             
@@ -441,29 +468,24 @@
                     if (wData) {
                         for (let i = 0; i < 100; i++) {
                             const wSpine = new PIXI.spine.Spine(wData);
-                            wSpine.visible = false; 
-                            windowContainer.addChild(wSpine);
-                            pool.push(wSpine);
+                            wSpine.visible = false; windowContainer.addChild(wSpine); pool.push(wSpine);
                         }
                         windowPools.push(pool);
                     }
-                } catch(e) {
-                    console.error(`第 ${index+1} 套窗户动画缺失资源，已跳过加载:`, e);
-                }
+                } catch(e) {}
             });
 
             if (peopleData) {
                 for (let i = 0; i < 100; i++) {
                     const pSpine = new PIXI.spine.Spine(peopleData);
-                    pSpine.visible = false; 
-                    peopleInstances.push(pSpine);
-                    peopleContainer.addChild(pSpine);
+                    pSpine.visible = false; peopleInstances.push(pSpine); peopleContainer.addChild(pSpine);
                 }
             }
 
             const resizeObserver = new ResizeObserver(() => {
                 if (pixiApp) pixiApp.resize();
                 if (cgApp) cgApp.resize();
+                if (uiApp) uiApp.resize();
                 updateSpinePositions();
             });
             resizeObserver.observe(gridEl);
@@ -474,45 +496,42 @@
 
     function updateSpinePositions() {
         cgInstances.forEach(cg => {
-            cg.x = cgApp.screen.width / 2;
-            cg.y = cgApp.screen.height; 
-            let scale = cgApp.screen.width / 750;
-            cg.scale.set(scale);
+            cg.x = cgApp.screen.width / 2; cg.y = cgApp.screen.height; 
+            let scale = cgApp.screen.width / 750; cg.scale.set(scale);
         });
+
+        // 适配顶层特效居中
+        if (victorySpineInstance && uiApp) {
+            victorySpineInstance.x = uiApp.screen.width / 2;
+            victorySpineInstance.y = uiApp.screen.height / 2;
+            let scale = uiApp.screen.width / 750;
+            victorySpineInstance.scale.set(scale);
+        }
+        if (failSpineInstance && uiApp) {
+            failSpineInstance.x = uiApp.screen.width / 2;
+            failSpineInstance.y = uiApp.screen.height / 2;
+            let scale = uiApp.screen.width / 750;
+            failSpineInstance.scale.set(scale);
+        }
 
         if (!pixiApp || windowInstances.length === 0) return;
         const container = document.getElementById('pixi-canvas-container');
         const containerRect = container.getBoundingClientRect();
         const cells = gridEl.children;
-        
         const totalCells = currentGridSize * currentGridSize;
         if (cells.length < totalCells) return; 
 
         for (let i = 0; i < totalCells; i++) {
-            const cell = cells[i];
-            const wSpine = windowInstances[i];
-            const pSpine = peopleInstances[i];
+            const cell = cells[i]; const wSpine = windowInstances[i]; const pSpine = peopleInstances[i];
             const cellRect = cell.getBoundingClientRect();
-
             if (cellRect.width === 0) continue; 
             const x = cellRect.left - containerRect.left;
             const y = cellRect.top - containerRect.top;
-            
             const targetScale = cellRect.width / SPINE_CONFIG.baseWidth;
-            
             if (wSpine) wSpine.baseScale = targetScale;
             if (pSpine) pSpine.baseScale = targetScale; 
-            
-            if (wSpine) {
-                wSpine.x = x + cellRect.width * SPINE_CONFIG.originX;
-                wSpine.y = y + cellRect.height * SPINE_CONFIG.originY;
-                wSpine.scale.set(targetScale);
-            }
-            if (pSpine) {
-                pSpine.x = x + cellRect.width * SPINE_CONFIG.originX;
-                pSpine.y = y + cellRect.height * SPINE_CONFIG.originY;
-                pSpine.scale.set(targetScale);
-            }
+            if (wSpine) { wSpine.x = x + cellRect.width * SPINE_CONFIG.originX; wSpine.y = y + cellRect.height * SPINE_CONFIG.originY; wSpine.scale.set(targetScale); }
+            if (pSpine) { pSpine.x = x + cellRect.width * SPINE_CONFIG.originX; pSpine.y = y + cellRect.height * SPINE_CONFIG.originY; pSpine.scale.set(targetScale); }
         }
     }
 
@@ -521,52 +540,42 @@
         const currentSession = currentSessionId; 
 
         if (index >= levelData.length) index = 0; 
+        
+        // 隐藏所有结算UI和特效
         document.getElementById('victory-screen').style.display = 'none';
+        document.getElementById('fail-screen').style.display = 'none';
+        if (victorySpineInstance) victorySpineInstance.visible = false;
+        if (failSpineInstance) failSpineInstance.visible = false;
 
         const buildingLayer = document.getElementById('building-layer');
         buildingLayer.style.transition = 'none';
         buildingLayer.style.transform = 'translateY(100%)';
 
         document.querySelectorAll('.ui-anim').forEach(el => el.classList.remove('show'));
-
         cgInstances.forEach(cg => cg.visible = false);
         
         let slideDelay = 800; 
-        
         if (cgInstances.length > 0) {
             let randomCgIndex = Math.floor(Math.random() * cgInstances.length);
             currentCgInstance = cgInstances[randomCgIndex];
-            
             if (currentCgInstance && currentCgInstance.spineData.findAnimation('action')) {
                 currentCgInstance.visible = true;
                 currentCgInstance.state.setAnimation(0, 'action', false); 
-            } else {
-                slideDelay = 50; 
-            }
-        } else {
-            slideDelay = 50;
-        }
+            } else { slideDelay = 50; }
+        } else { slideDelay = 50; }
 
         setTimeout(() => {
             if (currentSession !== currentSessionId) return;
-
             buildingLayer.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
             buildingLayer.style.transform = 'translateY(0)';
-
             setTimeout(() => { if (currentSession === currentSessionId) document.querySelectorAll('.anim-group-1').forEach(el => el.classList.add('show')); }, 0);
             setTimeout(() => { if (currentSession === currentSessionId) document.querySelectorAll('.anim-group-2').forEach(el => el.classList.add('show')); }, 200);
             setTimeout(() => { if (currentSession === currentSessionId) document.querySelectorAll('.anim-group-3').forEach(el => el.classList.add('show')); }, 400);
-
         }, slideDelay);
 
-
         currentLevel = levelData[index];
-        
         const randomBgIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
-        
-        // 【缓存清理点 3】：背景图加载强制带上版本号
         const selectedBg = BACKGROUND_IMAGES[randomBgIndex] + '?v=' + GAME_VERSION;
-        
         buildingLayer.style.background = `url('${selectedBg}') center bottom / 100% auto no-repeat transparent`;
 
         currentGridSize = currentLevel.solution.length;
@@ -574,12 +583,7 @@
         
         lives = 3;
         document.querySelectorAll('.heart').forEach(h => h.style.opacity = '1');
-
-        if (currentLevel.initialThief) {
-            thievesRemaining = currentGridSize - 1; 
-        } else {
-            thievesRemaining = currentGridSize;
-        }
+        thievesRemaining = currentLevel.initialThief ? currentGridSize - 1 : currentGridSize;
         document.getElementById('thief-counter').innerText = thievesRemaining;
 
         const rulesPanel = document.getElementById('rules-panel');
@@ -590,9 +594,7 @@
         availableFailAnims =['people1', 'people2', 'people3', 'people4', 'people5', 'people6', 'people7', 'people8', 'people9', 'people10'].sort(() => Math.random() - 0.5);
 
         playerState = Array(currentGridSize).fill().map(() => Array(currentGridSize).fill(0));
-        if (currentLevel.initialThief) {
-            playerState[currentLevel.initialThief.r][currentLevel.initialThief.c] = 2;
-        }
+        if (currentLevel.initialThief) playerState[currentLevel.initialThief.r][currentLevel.initialThief.c] = 2;
 
         gridEl.style.gridTemplateColumns = `repeat(${currentGridSize}, 1fr)`;
         gridEl.style.gap = currentGridSize > 8 ? '2px' : (currentGridSize > 6 ? '4px' : '6px');
@@ -608,10 +610,7 @@
         for (let r = 0; r < currentGridSize; r++) {
             for (let c = 0; c < currentGridSize; c++) {
                 const cell = document.createElement('div');
-                cell.className = `cell`;
-                cell.dataset.r = r;
-                cell.dataset.c = c;
-                gridEl.appendChild(cell);
+                cell.className = `cell`; cell.dataset.r = r; cell.dataset.c = c; gridEl.appendChild(cell);
 
                 const spineIndex = r * currentGridSize + c;
                 const wSpine = windowInstances[spineIndex];
@@ -620,31 +619,23 @@
                 if (wSpine && pSpine) {
                     wSpine.visible = true;
                     let skinColor = currentLevel.regions[r][c]; 
-                    
                     try {
-                        if (skinColor <= 10) {
-                            wSpine.skeleton.setSkinByName(`window${skinColor}`);
-                            wSpine.filters =[]; 
-                        } else {
+                        if (skinColor <= 10) { wSpine.skeleton.setSkinByName(`window${skinColor}`); wSpine.filters =[]; } 
+                        else {
                             let baseSkin = ((skinColor - 1) % 10) + 1; 
                             wSpine.skeleton.setSkinByName(`window${baseSkin}`);
                             const colorMatrix = new PIXI.filters.ColorMatrixFilter();
-                            let hueShift = (Math.floor((skinColor - 1) / 10) * 137.5) % 360;
-                            colorMatrix.hue(hueShift, false);
+                            colorMatrix.hue((Math.floor((skinColor - 1) / 10) * 137.5) % 360, false);
                             wSpine.filters =[colorMatrix];
                         }
                         wSpine.skeleton.setSlotsToSetupPose();
-                    } catch (e) { 
-                        wSpine.filters =[];
-                    }
+                    } catch (e) { wSpine.filters =[]; }
                     
                     if (playerState[r][c] === 2) {
                         safePlaySpine(wSpine, 0, 'open', false, -1);
                         safePlaySpine(pSpine, 0, 'hit', true, -1); 
                         safePlaySpine(wSpine, 0, 'wait', true, 0);
-                        
-                        pSpine.state.apply(pSpine.skeleton);
-                        pSpine.skeleton.updateWorldTransform();
+                        pSpine.state.apply(pSpine.skeleton); pSpine.skeleton.updateWorldTransform();
                         pSpine.visible = true;
                     } else {
                         pSpine.visible = false;
@@ -653,41 +644,27 @@
                 }
             }
         }
-        
-        setTimeout(updateSpinePositions, 50);
-        updateBoardView();
+        setTimeout(updateSpinePositions, 50); updateBoardView();
     }
 
     function executeDoubleTapAction(r, c) {
         const index = r * currentGridSize + c;
         const wSpine = windowInstances[index];
         const pSpine = peopleInstances[index];
-
         const currentSession = currentSessionId; 
 
         if (currentLevel.solution[r][c] === 1) {
-            playerState[r][c] = 2; 
-            thievesRemaining--;
-            
+            playerState[r][c] = 2; thievesRemaining--;
             if (wSpine && pSpine) {
                 safePlaySpine(wSpine, 0, 'open', false, -1);
                 safePlaySpine(pSpine, 0, 'people0', false, -1);
                 safePlaySpine(wSpine, 0, 'wait', true, 0);
-
-                pSpine.state.apply(pSpine.skeleton);
-                pSpine.skeleton.updateWorldTransform();
+                pSpine.state.apply(pSpine.skeleton); pSpine.skeleton.updateWorldTransform();
                 pSpine.visible = true;
             }
-
-            const cellElement = gridEl.children[index];
-            shootConfetti(cellElement);
-            updateBoardView();
-            checkWin();
-
+            shootConfetti(gridEl.children[index]); updateBoardView(); checkWin();
         } else {
-            playerState[r][c] = 4; 
-            updateBoardView(); 
-
+            playerState[r][c] = 4; updateBoardView(); 
             let openDur = getAnimDuration(wSpine, 'open');
             let endDur = getAnimDuration(wSpine, 'end');
             
@@ -697,21 +674,14 @@
                 safePlaySpine(pSpine, 0, failAnim, false, -1);
                 safePlaySpine(wSpine, 0, 'end', false, 0);
                 safePlaySpine(wSpine, 0, 'idle', true, 0);
-
-                pSpine.state.apply(pSpine.skeleton);
-                pSpine.skeleton.updateWorldTransform();
+                pSpine.state.apply(pSpine.skeleton); pSpine.skeleton.updateWorldTransform();
                 pSpine.visible = true;
             }
-
-            let totalAnimDuration = (openDur + endDur) * 1000;
             setTimeout(() => {
                 if (currentSession !== currentSessionId) return; 
-
                 if (pSpine) pSpine.visible = false; 
-                playerState[r][c] = 3; 
-                updateBoardView();
-                loseLife(); 
-            }, totalAnimDuration);
+                playerState[r][c] = 3; updateBoardView(); loseLife(); 
+            }, (openDur + endDur) * 1000);
         }
     }
 
@@ -719,50 +689,32 @@
         const cells = gridEl.children;
         const totalCells = currentGridSize * currentGridSize;
         if(cells.length === 0) return;
-
         let xSize = currentGridSize >= 8 ? 32 : 50;
         let errSize = currentGridSize >= 8 ? 40 : 60;
 
         for (let i = 0; i < totalCells; i++) {
-            const r = Math.floor(i / currentGridSize);
-            const c = i % currentGridSize;
-            const state = playerState[r][c];
-            const cell = cells[i];
-            
+            const r = Math.floor(i / currentGridSize); const c = i % currentGridSize;
+            const state = playerState[r][c]; const cell = cells[i];
             if (cell.dataset.state != state) {
-                cell.dataset.state = state;
-                cell.innerHTML = '';
-                
-                if (state === 1) {
-                    cell.innerHTML = `<span class="mark-x" style="font-size: ${xSize}px;">×</span>`;
-                } else if (state === 3) {
-                    cell.innerHTML = `<span class="mark-error" style="font-size: ${errSize}px;">×</span>`;
-                }
+                cell.dataset.state = state; cell.innerHTML = '';
+                if (state === 1) cell.innerHTML = `<span class="mark-x" style="font-size: ${xSize}px;">×</span>`;
+                else if (state === 3) cell.innerHTML = `<span class="mark-error" style="font-size: ${errSize}px;">×</span>`;
             }
         }
     }
 
     function shootConfetti(cell) {
-        const rect = cell.getBoundingClientRect();
-        const appRect = document.getElementById('app').getBoundingClientRect();
-        const centerX = rect.left - appRect.left + rect.width / 2;
-        const centerY = rect.top - appRect.top + rect.height / 2;
+        const rect = cell.getBoundingClientRect(); const appRect = document.getElementById('app').getBoundingClientRect();
+        const centerX = rect.left - appRect.left + rect.width / 2; const centerY = rect.top - appRect.top + rect.height / 2;
         const colors =['#f2a2c0', '#74c2f2', '#ebd160', '#4dbfa3', '#d96880', '#ffffff'];
-
         for (let i = 0; i < 45; i++) {
-            const p = document.createElement('div');
-            p.className = 'confetti-particle';
+            const p = document.createElement('div'); p.className = 'confetti-particle';
             p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            p.style.left = centerX + 'px';
-            p.style.top = centerY + 'px';
-            const angle = Math.random() * Math.PI * 2;
-            const velocity = 60 + Math.random() * 80; 
-            const tx = Math.cos(angle) * velocity;
-            const ty = Math.sin(angle) * velocity - 40; 
-            const rot = Math.random() * 720 + 360; 
-            p.style.setProperty('--tx', tx + 'px');
-            p.style.setProperty('--ty', ty + 'px');
-            p.style.setProperty('--rot', rot + 'deg');
+            p.style.left = centerX + 'px'; p.style.top = centerY + 'px';
+            const angle = Math.random() * Math.PI * 2; const velocity = 60 + Math.random() * 80; 
+            p.style.setProperty('--tx', Math.cos(angle) * velocity + 'px');
+            p.style.setProperty('--ty', Math.sin(angle) * velocity - 40 + 'px');
+            p.style.setProperty('--rot', Math.random() * 720 + 360 + 'deg');
             document.getElementById('app').appendChild(p);
             setTimeout(() => p.remove(), 800);
         }
@@ -770,29 +722,43 @@
 
     function loseLife() {
         const currentSession = currentSessionId;
-
         lives--;
         const hearts = document.querySelectorAll('.heart');
         if (lives >= 0) hearts[lives].style.opacity = '0.2';
         if (lives === 0) setTimeout(() => {
             if (currentSession !== currentSessionId) return; 
-            alert('目标逃脱！准备重新部署...');
-            loadLevel(currentLevelIndex);
+            
+            document.getElementById('fail-screen').style.display = 'flex';
+            if (failSpineInstance) {
+                failSpineInstance.visible = true;
+                // 播放一次，停在最后一帧
+                safePlaySpine(failSpineInstance, 0, 'nohappy', false, 0); 
+            }
         }, 300);
     }
 
     function checkWin() {
         const currentSession = currentSessionId;
-
         document.getElementById('thief-counter').innerText = thievesRemaining;
         if (thievesRemaining === 0 && lives > 0) {
             setTimeout(() => {
                 if (currentSession !== currentSessionId) return; 
+                
                 document.getElementById('victory-screen').style.display = 'flex';
                 totalCoins += 200;
                 document.getElementById('total-coins').innerText = totalCoins;
+                
+                if (victorySpineInstance) {
+                    victorySpineInstance.visible = true;
+                    // 播放一次，停在最后一帧
+                    safePlaySpine(victorySpineInstance, 0, 'happy', false, 0); 
+                }
             }, 600); 
         }
+    }
+
+    function retryLevel() {
+        loadLevel(currentLevelIndex);
     }
 
     function nextLevel() {
@@ -802,7 +768,6 @@
 
     document.getElementById('total-coins').innerText = totalCoins;
     initPixiAndSpine();
-
 </script>
 </body>
 </html>
